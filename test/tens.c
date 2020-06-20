@@ -20,6 +20,7 @@ MU_TEST(test_tens_get)
     mu_assert_int_eq(2, A.shape[2]);
 
     mu_assert_float_eq(12, tens_get(A, (size_t []) {1, 2, 1}));
+    mu_assert_float_eq(6, tens_get(A, (size_t []) {0, 2, 1}));
 }
 
 MU_TEST(test_tens_zeros)
@@ -34,9 +35,32 @@ MU_TEST(test_tens_zeros)
     free(T.arr);
 }
 
+MU_TEST(test_tens_reshape)
+{
+    float arr[] = {
+        1, 2,
+        3, 4,
+        5, 6,
+
+        7, 8,
+        9, 10,
+        11, 12
+    };
+    struct tens S = tens(arr, 3, (size_t []) {2, 3, 2});
+    struct tens T = tens_reshape(S, 1, (size_t []) {2 * 3 * 2});
+
+    mu_assert_float_eq(6, tens_get(S, (size_t []) {0, 2, 1}));
+    mu_assert_float_eq(6, tens_get(T, (size_t []) {5}));
+
+    *tens_getp(S, (size_t []) {0, 2, 1}) = -6;
+
+    mu_assert_float_eq(-6, tens_get(S, (size_t []) {0, 2, 1}));
+    mu_assert_float_eq(-6, tens_get(T, (size_t []) {5}));
+}
 
 MU_TEST_SUITE(test_tens)
 {
     MU_RUN_TEST(test_tens_get);
     MU_RUN_TEST(test_tens_zeros);
+    MU_RUN_TEST(test_tens_reshape);
 }
