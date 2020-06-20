@@ -15,13 +15,13 @@ struct mat {
     const size_t stride;
     const enum {
         row_major, column_major
-    } order;
+    } layout;
 };
 
 static inline
 struct mat mat(float *arr, size_t m, size_t n)
 {
-    return (struct mat) {arr, m, n, n, .order=row_major};
+    return (struct mat) {arr, m, n, n, .layout=row_major};
 }
 
 static inline
@@ -30,10 +30,10 @@ float *mat_getp(struct mat A, size_t i, size_t j)
     assert (i < A.m);
     assert (j < A.n);
 
-    if (A.order == row_major)
+    if (A.layout == row_major)
         return &(A.arr[i * A.stride + j]);
 
-    if (A.order == column_major)
+    if (A.layout == column_major)
         return &(A.arr[j * A.stride + i]);
 
     assert (false);

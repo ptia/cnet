@@ -29,7 +29,7 @@ struct mat mat_T(struct mat A)
         .m = A.n,
         .n = A.m,
         .stride = A.stride,
-        .order = A.order == row_major ? column_major : row_major
+        .layout = A.layout == row_major ? column_major : row_major
     };
 }
 
@@ -42,7 +42,7 @@ struct mat mat_reshape(struct mat A, size_t m, size_t n)
         .m = m,
         .n = n,
         .stride = A.stride,
-        .order = A.order
+        .layout = A.layout
     };
 }
 
@@ -57,7 +57,7 @@ struct mat mat_slice(
         .m = endi - starti,
         .n = endj - startj,
         .stride = A.stride,
-        .order = A.order
+        .layout = A.layout
     };
 
 }
