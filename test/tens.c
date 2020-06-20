@@ -58,9 +58,33 @@ MU_TEST(test_tens_reshape)
     mu_assert_float_eq(-6, tens_get(T, (size_t []) {5}));
 }
 
+MU_TEST(test_tens_slice)
+{
+    float arr[] = {
+        1, 2,
+        3, 4,
+        5, 6,
+
+        7, 8,
+        9, 10,
+        11, 12
+    };
+
+    struct tens T = tens(arr, 3, (size_t []) {2, 3, 2});
+    struct tens S = tens_slice(T, (size_t []) {0, 1, 0}, (size_t[]) {2, 2, 2});
+
+    mu_assert_int_eq(3, S.order);
+    mu_assert_int_eq(2, S.shape[0]);
+    mu_assert_int_eq(1, S.shape[1]);
+    mu_assert_int_eq(2, S.shape[2]);
+    
+    mu_assert_float_eq(9, tens_get(S, (size_t []) {1, 0, 0}));
+}
+
 MU_TEST_SUITE(test_tens)
 {
     MU_RUN_TEST(test_tens_get);
     MU_RUN_TEST(test_tens_zeros);
     MU_RUN_TEST(test_tens_reshape);
+    MU_RUN_TEST(test_tens_slice);
 }
