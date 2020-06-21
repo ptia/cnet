@@ -103,6 +103,51 @@ MU_TEST(test_tens_swap_axes)
     mu_assert_float_eq(9, tens_get(S, (size_t []) {0, 1, 1}));
 }
 
+MU_TEST(test_tens_scalar_mul)
+{
+    float arr[] = {
+        1, 2,
+        3, 4,
+        5, 6,
+
+        7, 8,
+        9, 10,
+        11, 12
+    };
+    struct tens T = tens(arr, 3, (size_t []) {2, 3, 2});
+    tens_scalar_mul(T, 2);
+
+    mu_assert_float_eq(2, tens_get(T, (size_t []) {0, 0, 0}));
+    mu_assert_float_eq(20, tens_get(T, (size_t []) {1, 1, 1}));
+}
+
+MU_TEST(test_tens_add)
+{
+    float arr1[] = {
+        1, 2,
+        3, 4,
+        5, 6,
+    };
+    float arr2[] = {
+        7, 8,
+        9, 10,
+        11, 12
+    };
+    struct tens T1 = tens(arr1, 2, (size_t []) {3, 2});
+    struct tens T2 = tens(arr2, 2, (size_t []) {3, 2});
+
+    tens_add(T1, T2);
+
+    mu_assert_float_eq(1, tens_get(T1, (size_t []) {0, 0}));
+    mu_assert_float_eq(8, tens_get(T2, (size_t []) {0, 0}));
+
+    mu_assert_float_eq(4, tens_get(T1, (size_t []) {1, 1}));
+    mu_assert_float_eq(14, tens_get(T2, (size_t []) {1, 1}));
+
+    mu_assert_float_eq(6, tens_get(T1, (size_t []) {2, 1}));
+    mu_assert_float_eq(18, tens_get(T2, (size_t []) {2, 1}));
+}
+
 MU_TEST_SUITE(test_tens)
 {
     MU_RUN_TEST(test_tens_get);
@@ -110,4 +155,6 @@ MU_TEST_SUITE(test_tens)
     MU_RUN_TEST(test_tens_reshape);
     MU_RUN_TEST(test_tens_slice);
     MU_RUN_TEST(test_tens_swap_axes);
+    MU_RUN_TEST(test_tens_scalar_mul);
+    MU_RUN_TEST(test_tens_add);
 }

@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 #define TENS_MAX_ORDER 4
 
@@ -100,6 +101,12 @@ size_t tens_size(struct tens T)
     return tens_shape_size(T.order, T.shape);
 }
 
+/* Test whether two tensors have the exact same shape and order */
+static inline
+bool tens_match(struct tens S, struct tens T)
+{
+    return S.order == T.order && !memcmp(S.shape, T.shape, S.order);
+}
 
 /* CREATORS */
 
@@ -194,9 +201,9 @@ struct tens tens_swap_axes(struct tens T, int8_t axis1, int8_t axis2)
 
 /* MODIFIERS */
 
+/* Multiply all elements of a tensor by a scalar */
+void tens_scalar_mul(struct tens T, float l);
+
 /* Add two matching tensors in place
  * T = S + T  */
 void tens_add(struct tens S, struct tens T);
-
-/* Multiply all elements of a tensor by a scalar */
-void tens_scalar_mul(struct tens S, float l);
