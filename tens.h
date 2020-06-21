@@ -1,4 +1,5 @@
 #pragma once
+
 #include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -7,11 +8,18 @@
 
 #define TENS_MAX_ORDER 4
 
-/* Each instance is an immutable view on an underlying data array (arr),
- * the only mutable part of a struct tens is the data array.
+/* STRUCT TENS
+ * 
+ * Each instance is a view on an underlying data array (arr),
  * Multiple views can share the same data, changes to it are shared.
  * Indexes are C-like by defalt: first index changes slowly, last one quickly,
  * but this can be changed with striding.
+ *
+ * Struct tens (the view, not the data) is small enough to be passed by value
+ * and all the functions here do so. This means that no function here will 
+ * change the view that's passed to it (some change the data).
+ * It is possible to manually change shape and strides, but this might corrupt
+ * access to the data.
  */
 struct tens {
     float *const arr;
@@ -25,7 +33,7 @@ struct tens {
  *
  * GETTERS:
  * Get a property of a tensor, making no changes, allocating no memory.
- * e.g.: tens_get() - Get a (scalar) element of a tensor
+ * e.g.: tens_get() - Get the (scalar) element of a tensor at given coordinates
  *
  * CREATORS:
  * Generate and return a brand new tensor with default layout, 
@@ -47,6 +55,9 @@ struct tens {
  * If the function takes multiple tensors, only the last one is modified
  * (unless otherwise specified).
  * e.g.: tens_add() - Add two matching tensors element-wise
+ *
+ * All these functions take struct tens by value, not pointer, so they won't
+ * change the original view.
  */
 
 
@@ -54,7 +65,7 @@ struct tens {
 
 /* Get pointer to (scalar) element in tensor */
 static inline
-float *tens_getp(struct tens T, size_t *index)
+float *tens_getp(struct tens T, const size_t *index)
 {
     size_t offset = 0;
     for (int8_t i = 0; i < T.order; i++) {
@@ -66,14 +77,14 @@ float *tens_getp(struct tens T, size_t *index)
 
 /* Get value of (scalar) element in tensor */
 static inline
-float tens_get(struct tens T, size_t *index)
+float tens_get(struct tens T, const size_t *index)
 {
     return *tens_getp(T, index);
 }
 
-/* Get total linear size of the data (product of shapes) */
+/* Get total linear size of the data (product of shape) */
 static inline
-size_t tens_size(int8_t order, size_t *shape)
+size_t tens_shape_size(int8_t order, const size_t *shape)
 {
     size_t size = 1;
     for (int8_t i = 0; i < order ; i++) {
@@ -82,13 +93,20 @@ size_t tens_size(int8_t order, size_t *shape)
     return size;
 }
 
+/* Get total linear size of the data (product of shape) */
+static inline
+size_t tens_size(struct tens T)
+{
+    return tens_shape_size(T.order, T.shape);
+}
+
 
 /* CREATORS */
 
 /* Tensor from raw data array (in-place, does not malloc),
  * assuming default layout */
 static inline
-struct tens tens(float *arr, int8_t order, size_t *shape)
+struct tens tens(float *arr, int8_t order, const size_t *shape)
 {
     assert (order <= TENS_MAX_ORDER);
 
@@ -107,10 +125,10 @@ struct tens tens(float *arr, int8_t order, size_t *shape)
 
 /* New zero-initialised tensor (calloc'ing, remember to free A.arr) */
 static inline
-struct tens tens_zeros(int8_t order, size_t *shape)
+struct tens tens_zeros(int8_t order, const size_t *shape)
 {
     return tens(
-        calloc(1, tens_size(order, shape) * sizeof(float)),
+        calloc(1, tens_shape_size(order, shape) * sizeof(float)),
         order, shape
     );
 }
@@ -120,16 +138,17 @@ struct tens tens_zeros(int8_t order, size_t *shape)
 
 /* Pre (TODO assert): T not strided */
 static inline
-struct tens tens_reshape(struct tens T, int8_t order, size_t *shape)
+struct tens tens_reshape(struct tens T, int8_t order, const size_t *shape)
 {
-    assert (tens_size(T.order, T.shape) == tens_size(order, shape));
+    assert (tens_size(T) == tens_shape_size(order, shape));
     return tens(T.arr, order, shape);
 }
 
 /* Slice of T (same order), starting from start, 
  * extending for shape along all axes */
 static inline
-struct tens tens_slice_shape(struct tens T, size_t *start, size_t *shape)
+struct tens tens_slice_shape(
+        struct tens T, const size_t *start, const size_t *shape)
 {
     struct tens S = (struct tens) {
         .arr = tens_getp(T, start),
@@ -149,7 +168,7 @@ struct tens tens_slice_shape(struct tens T, size_t *start, size_t *shape)
 /* Slice of T (same order), going from start (inclusive) to end (exclusive),
  * along all axes */
 static inline
-struct tens tens_slice(struct tens T, size_t *start, size_t *end)
+struct tens tens_slice(struct tens T, const size_t *start, const size_t *end)
 {
     size_t shape[T.order + 1];
     for (int8_t i = 0; i < T.order; i++) {
@@ -178,3 +197,6 @@ struct tens tens_swap_axes(struct tens T, int8_t axis1, int8_t axis2)
 /* Add two matching tensors in place
  * T = S + T  */
 void tens_add(struct tens S, struct tens T);
+
+/* Multiply all elements of a tensor by a scalar */
+void tens_scalar_mul(struct tens S, float l);
