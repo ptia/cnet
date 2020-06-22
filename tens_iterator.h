@@ -6,17 +6,16 @@
 /* STRUCT TENS_ITERATOR
  *
  * Iterate over scalar entries in tensor, following axes right to left.
- * Optionally, iterate starting from a custom axis, skipping lowe axes
- * and skipping elements.
+ * Optionally, iterate skipping lower n axes
  */
 struct tens_iterator {
     struct tensor tensor;
     size_t index[TENS_MAX_ORDER];   
     bool has_next;
-    int8_t axis;
+    int8_t skip_axes;
 };
 
-/* New iterator on given tensor starting from the start
+/* New iterator on given tensor starting from {0, 0, ...}
  * and along the last axis (so no elements are skipped) */
 static inline
 struct tens_iterator tens_iterator(struct tensor tensor)
@@ -25,20 +24,22 @@ struct tens_iterator tens_iterator(struct tensor tensor)
         .tensor = tensor, 
         .index = {0}, 
         .has_next = true, 
-        .axis = tensor.order - 1
+        .skip_axes = 0
     };
 }
 
-/* New iterator on given tensor starting from the start
- * along a custom axis, skipping lower axes in iteration */
+/* New iterator on given tensor starting from {0, 0, ...}
+ * skipping lower n axes in iteration */
 static inline
-struct tens_iterator tens_iterator_axis(struct tensor tensor, int8_t axis)
+struct tens_iterator tens_iterator_skip_axes(
+        struct tensor tensor, int8_t skip_axes)
 {
+    assert (skip_axes <= tensor.order);
     return (struct tens_iterator) {
         .tensor = tensor, 
         .index = {0}, 
         .has_next = true, 
-        .axis = axis
+        .skip_axes = skip_axes
     };
 }
 

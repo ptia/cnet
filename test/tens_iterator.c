@@ -21,7 +21,7 @@ MU_TEST(test_tens_iter_all_axes)
     mu_assert_ptr_eq(NULL, tens_iter_next(&iter));
 }
 
-MU_TEST(test_tens_iter_axis)
+MU_TEST(test_tens_iterator_skip_axes)
 {
     float arr[] = {
         1, 2,
@@ -33,7 +33,7 @@ MU_TEST(test_tens_iter_axis)
         11, 12
     };
     struct tensor T = tensor(arr, 3, (size_t []) {2, 3, 2});
-    struct tens_iterator iter = tens_iterator_axis(T, 1);
+    struct tens_iterator iter = tens_iterator_skip_axes(T, 1);
 
     mu_assert_float_eq(1, *tens_iter_next(&iter));
     mu_assert_float_eq(3, *tens_iter_next(&iter));
@@ -48,5 +48,5 @@ MU_TEST(test_tens_iter_axis)
 MU_TEST_SUITE(test_tens_iterator)
 {
     MU_RUN_TEST(test_tens_iter_all_axes);
-    MU_RUN_TEST(test_tens_iter_axis);
+    MU_RUN_TEST(test_tens_iterator_skip_axes);
 }
