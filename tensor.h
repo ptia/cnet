@@ -112,6 +112,13 @@ bool tens_match(struct tensor S, struct tensor T)
     return S.order == T.order && !memcmp(S.shape, T.shape, S.order);
 }
 
+/* Test whether a tensor has an exact shape and order */
+static inline
+bool tens_match_shape(struct tensor S, int8_t order, const size_t *shape)
+{
+    return S.order == order && !memcmp(S.shape, shape, order);
+}
+
 /* CREATORS */
 
 /* Tensor from raw data array (in-place, does not malloc),
@@ -235,7 +242,7 @@ struct tensor tens_add_axes(struct tensor T, int8_t axis, int8_t count)
 /* Broadcast two tensors together using numpy rules,
  * skipping lower n axes */
 static inline
-struct tens_pair tens_broadcast(
+struct tens_pair tens_broadcast_skip_axes(
         struct tensor S, struct tensor T, int8_t skip_axes)
 {
     /* Match orders by adding axes at the highest dimension */
@@ -244,7 +251,7 @@ struct tens_pair tens_broadcast(
     if (T.order < S.order)
         T = tens_add_axes(T, 0, S.order - T.order);
 
-    assert (skip_axes < S.order);
+    assert (skip_axes <= S.order);
 
     for (int8_t i = 0; i < S.order - skip_axes; i++) {
         if (S.shape[i] == T.shape[i])
@@ -266,6 +273,13 @@ struct tens_pair tens_broadcast(
     }
 
     return (struct tens_pair) {S, T};
+}
+
+/* Broadcast two tensors using numpy rules, matching all axes */
+static inline
+struct tens_pair tens_broadcast(struct tensor S, struct tensor T)
+{
+    return tens_broadcast_skip_axes(S, T, 0);
 }
 
 /* MODIFIERS */
