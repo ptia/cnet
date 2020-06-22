@@ -7,7 +7,7 @@ float *tens_iter_next(struct tens_iterator *iter)
 
     float *out = tens_getp(iter->tensor, iter->index);
 
-    int8_t i = iter->tensor.order;
+    int8_t i = iter->axis + 1;
     do {
         if (i == 0)
             iter->has_next = false;
