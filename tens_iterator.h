@@ -35,7 +35,7 @@ static inline
 struct tens_iterator tens_iterator_skip_axes(
         struct tensor tensor, int8_t skip_axes)
 {
-    assert (skip_axes <= tensor.order);
+    assert (skip_axes < tensor.order);
     return (struct tens_iterator) {
         .tensor = tensor, 
         .index = {0}, 
