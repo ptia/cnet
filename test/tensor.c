@@ -148,6 +148,74 @@ MU_TEST(test_tens_add)
     mu_assert_float_eq(18, tens_get(T2, (size_t []) {2, 1}));
 }
 
+MU_TEST(test_tens_add_axes_single)
+{
+    float arr[] = {
+        1, 2,
+        3, 4,
+        5, 6,
+
+        7, 8,
+        9, 10,
+        11, 12
+    };
+    struct tensor T = tensor(arr, 3, (size_t []) {2, 3, 2});
+    struct tensor S = tens_add_axes(T, 1, 1);
+
+    mu_assert_int_eq(4, S.order);
+
+    mu_assert_int_eq(2, S.shape[0]);
+    mu_assert_int_eq(1, S.shape[1]);
+    mu_assert_int_eq(3, S.shape[2]);
+    mu_assert_int_eq(2, S.shape[3]);
+
+    mu_assert_int_eq(6, S.strides[0]);
+    mu_assert_int_eq(0, S.strides[1]);
+    mu_assert_int_eq(2, S.strides[2]);
+    mu_assert_int_eq(1, S.strides[3]);
+
+    mu_assert_float_eq(9, tens_get(S, (size_t []) {1, 0, 1, 0}));
+}
+
+MU_TEST(test_tens_add_axes_many)
+{
+    float arr[] = {
+        1, 2,
+        3, 4,
+        5, 6,
+    };
+    struct tensor T = tensor(arr, 2, (size_t []) {3, 2});
+    struct tensor S = tens_add_axes(T, 0, 2);
+
+    mu_assert_int_eq(4, S.order);
+
+    mu_assert_int_eq(1, S.shape[0]);
+    mu_assert_int_eq(1, S.shape[1]);
+    mu_assert_int_eq(3, S.shape[2]);
+    mu_assert_int_eq(2, S.shape[3]);
+
+    mu_assert_int_eq(0, S.strides[0]);
+    mu_assert_int_eq(0, S.strides[1]);
+    mu_assert_int_eq(2, S.strides[2]);
+    mu_assert_int_eq(1, S.strides[3]);
+
+    mu_assert_float_eq(3, tens_get(S, (size_t []) {0, 0, 1, 0}));
+}
+
+MU_TEST(test_tens_broadcast)
+{
+    struct tensor S = tensor(NULL, 4, (size_t []) {3, 2, 1, 7});
+    struct tensor T = tensor(NULL, 3, (size_t []) {   2, 5, 7});
+
+    struct tens_pair ST = tens_broadcast(S, T);
+
+    mu_assert_int_eq(3, ST.T.shape[0]);
+    mu_assert_int_eq(2, ST.T.shape[1]);
+    mu_assert_int_eq(5, ST.S.shape[2]);
+    mu_assert_int_eq(7, ST.T.shape[3]);
+}
+
+
 MU_TEST_SUITE(test_tensor)
 {
     MU_RUN_TEST(test_tens_get);
@@ -155,6 +223,9 @@ MU_TEST_SUITE(test_tensor)
     MU_RUN_TEST(test_tens_reshape);
     MU_RUN_TEST(test_tens_slice);
     MU_RUN_TEST(test_tens_swap_axes);
+    MU_RUN_TEST(test_tens_add_axes_single);
+    MU_RUN_TEST(test_tens_add_axes_many);
+    MU_RUN_TEST(test_tens_broadcast);
     MU_RUN_TEST(test_tens_scalar_mul);
     MU_RUN_TEST(test_tens_add);
 }

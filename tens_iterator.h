@@ -7,12 +7,13 @@
  *
  * Iterate over scalar entries in tensor, following axes right to left.
  * Optionally, iterate skipping lower n axes
+ * TODO: optimise for continuous tensors
  */
 struct tens_iterator {
-    struct tensor tensor;
+    const struct tensor tensor;
     size_t index[TENS_MAX_ORDER];   
     bool has_next;
-    int8_t skip_axes;
+    const int8_t skip_axes;
 };
 
 /* New iterator on given tensor starting from {0, 0, ...}

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "util.h"
 #include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -23,12 +24,15 @@
  * access to the data.
  */
 struct tensor {
-    float *const arr;
+    float *arr;
     size_t shape[TENS_MAX_ORDER];
     size_t strides[TENS_MAX_ORDER];
-    const int8_t order;
+    int8_t order;
 };
 
+struct tens_pair {
+    struct tensor S, T;
+};
 
 /* There are 4 kinds of functions on tensors, all declared in this file:
  *
@@ -117,7 +121,7 @@ struct tensor tensor(float *arr, int8_t order, const size_t *shape)
 {
     assert (order <= TENS_MAX_ORDER);
 
-    struct tensor out = (struct tensor) {.arr = arr, .order = order};
+    struct tensor out = (struct tensor) { .arr = arr, .order = order };
     
     size_t stride = 1;
     for (int8_t i = order - 1; i >= 0; i--) {
@@ -191,6 +195,8 @@ struct tensor tens_slice(
 static inline
 struct tensor tens_swap_axes(struct tensor T, int8_t axis1, int8_t axis2)
 {
+    assert (axis1 < T.order && axis2 < T.order);
+
     struct tensor S = T;
     S.shape[axis1] = T.shape[axis2];
     S.shape[axis2] = T.shape[axis1];
@@ -199,12 +205,75 @@ struct tensor tens_swap_axes(struct tensor T, int8_t axis1, int8_t axis2)
     return S;
 }
 
+/* Add an multiple axes to the tensor at dimension n. 
+ * They will have length 1 */
+static inline
+struct tensor tens_add_axes(struct tensor T, int8_t axis, int8_t count)
+{
+    assert (axis <= T.order);
+    assert (T.order + count <= TENS_MAX_ORDER);
+
+    if (count == 0)
+        return T;
+
+    struct tensor S = { .arr = T.arr, .order = T.order + count };
+    for (int8_t i = 0; i < T.order + count; i++) {
+        if (i < axis) {
+            S.shape[i] = T.shape[i];
+            S.strides[i] = T.strides[i];
+        } else if (axis <= i && i < axis + count) {
+            S.shape[i] = 1;
+            S.strides[i] = 0;
+        } else {
+            S.shape[i] = T.shape[i - count];
+            S.strides[i] = T.strides[i - count];
+        }
+    }
+    return S;
+}
+
+/* Broadcast two tensors together using numpy rules */
+static inline
+struct tens_pair tens_broadcast(struct tensor S, struct tensor T)
+{
+    /* Match orders by adding axes at the highest dimension */
+    if (S.order < T.order)
+        S = tens_add_axes(S, 0, T.order - S.order);
+    if (T.order < S.order)
+        T = tens_add_axes(T, 0, S.order - T.order);
+
+    for (int8_t i = 0; i < S.order; i++) {
+        if (S.shape[i] == T.shape[i])
+            continue;
+
+        if (S.shape[i] == 1) {
+            S.shape[i] = T.shape[i];
+            S.strides[i] = 0;
+            continue;
+        }
+
+        if (T.shape[i] == 1) {
+            T.shape[i] = S.shape[i];
+            T.strides[i] = 0;
+            continue;
+        }
+        
+        assert (false);
+    }
+
+    return (struct tens_pair) {S, T};
+}
 
 /* MODIFIERS */
 
-/* Multiply all elements of a tensor by a scalar */
+/* Multiply all elements of a tensor by a scalar 
+ * T = lT  */
 void tens_scalar_mul(struct tensor T, float l);
 
 /* Add two matching tensors in place
  * T = S + T  */
 void tens_add(struct tensor S, struct tensor T);
+
+/* Matrix multiplication over the last two dimensions
+ * U = S@T  */
+void tens_mat_mul(struct tensor S, struct tensor T, struct tensor U);
