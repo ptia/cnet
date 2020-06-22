@@ -207,7 +207,7 @@ MU_TEST(test_tens_broadcast)
     struct tensor S = tensor(NULL, 4, (size_t []) {3, 2, 1, 7});
     struct tensor T = tensor(NULL, 3, (size_t []) {   2, 5, 7});
 
-    struct tens_pair ST = tens_broadcast(S, T);
+    struct tens_pair ST = tens_broadcast(S, T, 0);
 
     mu_assert_int_eq(3, ST.T.shape[0]);
     mu_assert_int_eq(2, ST.T.shape[1]);

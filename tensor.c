@@ -11,7 +11,7 @@ void tens_scalar_mul(struct tensor T, float l)
 
 void tens_add(struct tensor S, struct tensor T, struct tensor D)
 {
-    struct tens_pair ST = tens_broadcast(S, T);
+    struct tens_pair ST = tens_broadcast(S, T, 0);
     S = ST.S;
     T = ST.T;
     assert (tens_match(S, D));

@@ -232,9 +232,11 @@ struct tensor tens_add_axes(struct tensor T, int8_t axis, int8_t count)
     return S;
 }
 
-/* Broadcast two tensors together using numpy rules */
+/* Broadcast two tensors together using numpy rules,
+ * only broadcasting axes from n up*/
 static inline
-struct tens_pair tens_broadcast(struct tensor S, struct tensor T)
+struct tens_pair tens_broadcast(
+        struct tensor S, struct tensor T, int8_t axis)
 {
     /* Match orders by adding axes at the highest dimension */
     if (S.order < T.order)
@@ -242,7 +244,9 @@ struct tens_pair tens_broadcast(struct tensor S, struct tensor T)
     if (T.order < S.order)
         T = tens_add_axes(T, 0, S.order - T.order);
 
-    for (int8_t i = 0; i < S.order; i++) {
+    assert (axis < S.order);
+
+    for (int8_t i = axis; i < S.order; i++) {
         if (S.shape[i] == T.shape[i])
             continue;
 
