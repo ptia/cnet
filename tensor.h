@@ -271,9 +271,9 @@ struct tens_pair tens_broadcast(struct tensor S, struct tensor T)
 void tens_scalar_mul(struct tensor T, float l);
 
 /* Add two matching tensors in place
- * T = S + T  */
-void tens_add(struct tensor S, struct tensor T);
+ * D = S + T  */
+void tens_add(struct tensor S, struct tensor T, struct tensor D);
 
 /* Matrix multiplication over the last two dimensions
  * U = S@T  */
-void tens_mat_mul(struct tensor S, struct tensor T, struct tensor U);
+void tens_mat_mul(struct tensor S, struct tensor T, struct tensor D);

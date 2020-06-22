@@ -136,7 +136,7 @@ MU_TEST(test_tens_add)
     struct tensor T1 = tensor(arr1, 2, (size_t []) {3, 2});
     struct tensor T2 = tensor(arr2, 2, (size_t []) {3, 2});
 
-    tens_add(T1, T2);
+    tens_add(T1, T2, T1);
 
     mu_assert_float_eq(1, tens_get(T1, (size_t []) {0, 0}));
     mu_assert_float_eq(8, tens_get(T2, (size_t []) {0, 0}));
