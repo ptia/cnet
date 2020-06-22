@@ -1,19 +1,19 @@
 #pragma once
 
-#include "tens.h"
+#include "tensor.h"
 #include <stdbool.h>
 
 /* Iterate over scalar entries in tensor, 
  * following the natural axis ordering */
 struct tens_iterator {
-    struct tens tensor;
+    struct tensor tensor;
     size_t index[TENS_MAX_ORDER];   
     bool has_next;
 };
 
 /* New iterator on given tensor starting from the start */
 static inline
-struct tens_iterator tens_iterator(struct tens tensor)
+struct tens_iterator tens_iterator(struct tensor tensor)
 {
     return (struct tens_iterator) {
         .tensor = tensor, .index = {0}, .has_next = true

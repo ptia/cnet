@@ -1,15 +1,15 @@
-#include "tens.h"
+#include "tensor.h"
 #include "tens_iterator.h"
 #include <assert.h>
 
-void tens_scalar_mul(struct tens T, float l)
+void tens_scalar_mul(struct tensor T, float l)
 {
     struct tens_iterator iter = tens_iterator(T);
     for (float *t; (t = tens_iter_next(&iter)); )
         *t *= l;
 }
 
-void tens_add(struct tens S, struct tens T)
+void tens_add(struct tensor S, struct tensor T)
 {
     assert (tens_match(S, T));
     struct tens_iterator iterS = tens_iterator(S);

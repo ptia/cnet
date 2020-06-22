@@ -14,7 +14,7 @@ MU_TEST(test_tens_iter_next)
         11, 12
     };
 
-    struct tens T = tens(arr, 3, (size_t []) {2, 3, 2});
+    struct tensor T = tensor(arr, 3, (size_t []) {2, 3, 2});
     struct tens_iterator iter = tens_iterator(T);
 
     for (int i = 0; i < 12; i++)

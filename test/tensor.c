@@ -1,5 +1,5 @@
 #include "minunit.h"
-#include "../tens.h"
+#include "../tensor.h"
 #include <stdlib.h>
 
 MU_TEST(test_tens_get)
@@ -13,7 +13,7 @@ MU_TEST(test_tens_get)
         9, 10,
         11, 12
     };
-    struct tens A = tens(arr, 3, (size_t []) {2, 3, 2});
+    struct tensor A = tensor(arr, 3, (size_t []) {2, 3, 2});
 
     mu_assert_int_eq(2, A.shape[0]);
     mu_assert_int_eq(3, A.shape[1]);
@@ -25,7 +25,7 @@ MU_TEST(test_tens_get)
 
 MU_TEST(test_tens_zeros)
 {
-    struct tens T = tens_zeros(3, (size_t []) {2, 3, 3});
+    struct tensor T = tens_zeros(3, (size_t []) {2, 3, 3});
     
     mu_assert_int_eq(2, T.shape[0]);
     mu_assert_int_eq(3, T.shape[1]);
@@ -46,8 +46,8 @@ MU_TEST(test_tens_reshape)
         9, 10,
         11, 12
     };
-    struct tens S = tens(arr, 3, (size_t []) {2, 3, 2});
-    struct tens T = tens_reshape(S, 1, (size_t []) {2 * 3 * 2});
+    struct tensor S = tensor(arr, 3, (size_t []) {2, 3, 2});
+    struct tensor T = tens_reshape(S, 1, (size_t []) {2 * 3 * 2});
 
     mu_assert_float_eq(6, tens_get(S, (size_t []) {0, 2, 1}));
     mu_assert_float_eq(6, tens_get(T, (size_t []) {5}));
@@ -70,8 +70,8 @@ MU_TEST(test_tens_slice)
         11, 12
     };
 
-    struct tens T = tens(arr, 3, (size_t []) {2, 3, 2});
-    struct tens S = tens_slice(T, (size_t []) {0, 1, 0}, (size_t[]) {2, 2, 2});
+    struct tensor T = tensor(arr, 3, (size_t []) {2, 3, 2});
+    struct tensor S = tens_slice(T, (size_t []) {0, 1, 0}, (size_t[]) {2, 2, 2});
 
     mu_assert_int_eq(3, S.order);
     mu_assert_int_eq(2, S.shape[0]);
@@ -92,8 +92,8 @@ MU_TEST(test_tens_swap_axes)
         9, 10,
         11, 12
     };
-    struct tens T = tens(arr, 3, (size_t []) {2, 3, 2});
-    struct tens S = tens_swap_axes(T, 0, 2);
+    struct tensor T = tensor(arr, 3, (size_t []) {2, 3, 2});
+    struct tensor S = tens_swap_axes(T, 0, 2);
 
     mu_assert_int_eq(3, S.order);
     mu_assert_int_eq(2, S.shape[0]);
@@ -114,7 +114,7 @@ MU_TEST(test_tens_scalar_mul)
         9, 10,
         11, 12
     };
-    struct tens T = tens(arr, 3, (size_t []) {2, 3, 2});
+    struct tensor T = tensor(arr, 3, (size_t []) {2, 3, 2});
     tens_scalar_mul(T, 2);
 
     mu_assert_float_eq(2, tens_get(T, (size_t []) {0, 0, 0}));
@@ -133,8 +133,8 @@ MU_TEST(test_tens_add)
         9, 10,
         11, 12
     };
-    struct tens T1 = tens(arr1, 2, (size_t []) {3, 2});
-    struct tens T2 = tens(arr2, 2, (size_t []) {3, 2});
+    struct tensor T1 = tensor(arr1, 2, (size_t []) {3, 2});
+    struct tensor T2 = tensor(arr2, 2, (size_t []) {3, 2});
 
     tens_add(T1, T2);
 
@@ -148,7 +148,7 @@ MU_TEST(test_tens_add)
     mu_assert_float_eq(18, tens_get(T2, (size_t []) {2, 1}));
 }
 
-MU_TEST_SUITE(test_tens)
+MU_TEST_SUITE(test_tensor)
 {
     MU_RUN_TEST(test_tens_get);
     MU_RUN_TEST(test_tens_zeros);

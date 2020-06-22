@@ -1,6 +1,6 @@
 #include "minunit.h"
 #include "mat.c"
-#include "tens.c"
+#include "tensor.c"
 #include "tens_iterator.c"
 
 int main()
