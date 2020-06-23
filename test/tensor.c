@@ -229,6 +229,28 @@ MU_TEST(test_tens_broadcast_skip_axes)
     mu_assert_int_eq(3, ST.T.shape[3]);
 }
 
+MU_TEST(test_tens_mat_mul)
+{
+    float arra[] = {
+        0, 1, 2,
+        3, 4, 5
+    };
+    float arrb[] = {
+        0, 1,
+        2, 3,
+        4, 5
+    };
+    struct tensor A = tensor(arra, 2, (size_t []) {2, 3});
+    struct tensor B = tensor(arrb, 2, (size_t []) {3, 2});
+    struct tensor D = tens_zeros(2, (size_t []) {2, 2});
+
+    tens_mat_mul(A, B, D);
+    mu_assert_float_eq(10, tens_get(D, (size_t []) {0, 0}));
+    mu_assert_float_eq(13, tens_get(D, (size_t []) {0, 1}));
+    mu_assert_float_eq(28, tens_get(D, (size_t []) {1, 0}));
+    mu_assert_float_eq(40, tens_get(D, (size_t []) {1, 1}));
+}
+
 MU_TEST_SUITE(test_tensor)
 {
     MU_RUN_TEST(test_tens_get);
@@ -242,4 +264,5 @@ MU_TEST_SUITE(test_tensor)
     MU_RUN_TEST(test_tens_broadcast_skip_axes);
     MU_RUN_TEST(test_tens_scalar_mul);
     MU_RUN_TEST(test_tens_add);
+    MU_RUN_TEST(test_tens_mat_mul);
 }
