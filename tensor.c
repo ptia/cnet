@@ -39,7 +39,7 @@ void tens_mat_mul(struct tensor S, struct tensor T, struct tensor D)
         D_shape[i] = S.shape[i];
     D_shape[order - 2] = S.shape[order - 2];
     D_shape[order - 1] = S.shape[order - 1];
-    tens_match_shape(D, order, D_shape);
+    assert (tens_match_shape(D, order, D_shape));
 
     struct tensindex index = tensindex(S.shape, order);
     do {
