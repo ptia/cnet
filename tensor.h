@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <stdarg.h>
 
 #define TENS_MAX_ORDER 4
 
@@ -23,11 +24,16 @@
  * It is possible to manually change shape and strides, but this might corrupt
  * access to the data.
  */
+
+struct tens_shape {
+    int8_t order;
+    size_t shape[TENS_MAX_ORDER];
+};
+
 struct tensor {
     float *arr;
-    size_t shape[TENS_MAX_ORDER];
     size_t strides[TENS_MAX_ORDER];
-    int8_t order;
+    struct tens_shape shape;
 };
 
 struct tens_pair {
@@ -38,7 +44,7 @@ struct tens_pair {
  *
  * GETTERS:
  * Get a property of a tensor, making no changes, allocating no memory.
- * e.g.: tens_get() - Get the (scalar) element of a tensor at given coordinates
+ * e.g.: tens_get() - Get the (scalar) element of a tensor at given coords
  *
  * CREATORS:
  * Generate and return a brand new tensor with default layout, 
@@ -46,7 +52,7 @@ struct tens_pair {
  * e.g.: tens_zeros() - Calloc a new zero tensor
  *
  * VIEWS:
- * Return a new struct tensor instance with a different view, on the same data.
+ * Return a new struct tensor with a different view on the same data.
  * These functions never change the underlying data.
  * Any subsequent changes to the data will be shared.
  * No memory is allocated, all (struct tensor) instances exist on the stack.
@@ -73,8 +79,8 @@ static inline
 float *tens_getp(struct tensor T, const size_t *index)
 {
     size_t offset = 0;
-    for (int8_t i = 0; i < T.order; i++) {
-        assert (index[i] < T.shape[i]);
+    for (int8_t i = 0; i < T.shape.order; i++) {
+        assert (index[i] < T.shape.shape[i]);
         offset += T.strides[i] * index[i];
     }
     return &T.arr[offset];
@@ -89,53 +95,39 @@ float tens_get(struct tensor T, const size_t *index)
 
 /* Get total linear size of the data (product of shape) */
 static inline
-size_t tens_shapesize(int8_t order, const size_t *shape)
+size_t tens_size(struct tens_shape shape)
 {
     size_t size = 1;
-    for (int8_t i = 0; i < order ; i++) {
-        size *= shape[i];
+    for (int8_t i = 0; i < shape.order ; i++) {
+        size *= shape.shape[i];
     }
     return size;
 }
 
-/* Get total linear size of the data (product of shape) */
+/* Test whether two tensor shapes match exactly */
 static inline
-size_t tens_size(struct tensor T)
+bool tens_match(struct tens_shape s1, struct tens_shape s2)
 {
-    return tens_shapesize(T.order, T.shape);
+    return s1.order == s2.order && !memcmp(s1.shape, s2.shape, s1.order);
 }
 
-/* Test whether two tensors have the exact same shape and order */
-static inline
-bool tens_match(struct tensor S, struct tensor T)
-{
-    return S.order == T.order && !memcmp(S.shape, T.shape, S.order);
-}
-
-/* Test whether a tensor has an exact shape and order */
-static inline
-bool tens_matchshape(struct tensor S, int8_t order, const size_t *shape)
-{
-    return S.order == order && !memcmp(S.shape, shape, order);
-}
 
 /* CREATORS */
 
 /* Tensor from raw data array (in-place, does not malloc),
  * assuming default layout */
 static inline
-struct tensor tensor(float *arr, int8_t order, const size_t *shape)
+struct tensor tensor(float *arr, struct tens_shape shape)
 {
-    assert (order <= TENS_MAX_ORDER);
+    assert (shape.order <= TENS_MAX_ORDER);
 
-    struct tensor out = (struct tensor) { .arr = arr, .order = order };
+    struct tensor out = (struct tensor) { .arr = arr, .shape = shape};
     
     size_t stride = 1;
-    for (int8_t i = order - 1; i >= 0; i--) {
-        assert (shape[i] != 0);
+    for (int8_t i = shape.order - 1; i >= 0; i--) {
+        assert (shape.shape[i] != 0);
         out.strides[i] = stride;
-        out.shape[i] = shape[i];
-        stride *= shape[i];
+        stride *= shape.shape[i];
     }
 
     return out;
@@ -143,12 +135,9 @@ struct tensor tensor(float *arr, int8_t order, const size_t *shape)
 
 /* New zero-initialised tensor (calloc'ing, remember to free A.arr) */
 static inline
-struct tensor tens_zeros(int8_t order, const size_t *shape)
+struct tensor tens_zeros(struct tens_shape shape)
 {
-    return tensor(
-        calloc(1, tens_shapesize(order, shape) * sizeof(float)),
-        order, shape
-    );
+    return tensor(calloc(1, tens_size(shape) * sizeof(float)), shape);
 }
 
 
@@ -156,10 +145,10 @@ struct tensor tens_zeros(int8_t order, const size_t *shape)
 
 /* Pre (TODO assert): T not strided */
 static inline
-struct tensor tens_reshape(struct tensor T, int8_t order, const size_t *shape)
+struct tensor tens_reshape(struct tensor T, struct tens_shape shape)
 {
-    assert (tens_size(T) == tens_shapesize(order, shape));
-    return tensor(T.arr, order, shape);
+    assert (tens_size(T.shape) == tens_size(shape));
+    return tensor(T.arr, shape);
 }
 
 /* Slice of T (same order), starting from start, 
@@ -170,13 +159,13 @@ struct tensor tens_sliceshape(
 {
     struct tensor S = (struct tensor) {
         .arr = tens_getp(T, start),
-        .order = T.order,
+        .shape.order = T.shape.order,
     };
 
-    for (int8_t i = 0; i < T.order; i++) {
+    for (int8_t i = 0; i < T.shape.order; i++) {
         assert (shape[i] != 0);
-        assert (start[i] + shape[i] <= T.shape[i]);
-        S.shape[i] = shape[i];
+        assert (start[i] + shape[i] <= T.shape.shape[i]);
+        S.shape.shape[i] = shape[i];
         S.strides[i] = T.strides[i];
     }
 
@@ -189,10 +178,10 @@ static inline
 struct tensor tens_slice(
         struct tensor T, const size_t *start, const size_t *end)
 {
-    size_t shape[T.order + 1];
-    for (int8_t i = 0; i < T.order; i++) {
+    size_t shape[T.shape.order + 1];
+    for (int8_t i = 0; i < T.shape.order; i++) {
         assert (start[i] < end[i]);
-        assert (end[i] <= T.shape[i]);
+        assert (end[i] <= T.shape.shape[i]);
         shape[i] = end[i] - start[i];
     }
     return tens_sliceshape(T, start, shape);
@@ -202,11 +191,11 @@ struct tensor tens_slice(
 static inline
 struct tensor tens_swapaxes(struct tensor T, int8_t axis1, int8_t axis2)
 {
-    assert (axis1 < T.order && axis2 < T.order);
+    assert (axis1 < T.shape.order && axis2 < T.shape.order);
 
     struct tensor S = T;
-    S.shape[axis1] = T.shape[axis2];
-    S.shape[axis2] = T.shape[axis1];
+    S.shape.shape[axis1] = T.shape.shape[axis2];
+    S.shape.shape[axis2] = T.shape.shape[axis1];
     S.strides[axis1] = T.strides[axis2];
     S.strides[axis2] = T.strides[axis1];
     return S;
@@ -217,22 +206,22 @@ struct tensor tens_swapaxes(struct tensor T, int8_t axis1, int8_t axis2)
 static inline
 struct tensor tens_addaxes(struct tensor T, int8_t axis, int8_t count)
 {
-    assert (axis <= T.order);
-    assert (T.order + count <= TENS_MAX_ORDER);
+    assert (axis <= T.shape.order);
+    assert (T.shape.order + count <= TENS_MAX_ORDER);
 
     if (count == 0)
         return T;
 
-    struct tensor S = { .arr = T.arr, .order = T.order + count };
-    for (int8_t i = 0; i < T.order + count; i++) {
+    struct tensor S = { .arr = T.arr, .shape.order = T.shape.order + count };
+    for (int8_t i = 0; i < T.shape.order + count; i++) {
         if (i < axis) {
-            S.shape[i] = T.shape[i];
+            S.shape.shape[i] = T.shape.shape[i];
             S.strides[i] = T.strides[i];
         } else if (axis <= i && i < axis + count) {
-            S.shape[i] = 1;
+            S.shape.shape[i] = 1;
             S.strides[i] = 0;
         } else {
-            S.shape[i] = T.shape[i - count];
+            S.shape.shape[i] = T.shape.shape[i - count];
             S.strides[i] = T.strides[i - count];
         }
     }
@@ -246,25 +235,25 @@ struct tens_pair tens_broadcastskipaxes(
         struct tensor S, struct tensor T, int8_t skip_axes)
 {
     /* Match orders by adding axes at the highest dimension */
-    if (S.order < T.order)
-        S = tens_addaxes(S, 0, T.order - S.order);
-    if (T.order < S.order)
-        T = tens_addaxes(T, 0, S.order - T.order);
+    if (S.shape.order < T.shape.order)
+        S = tens_addaxes(S, 0, T.shape.order - S.shape.order);
+    if (T.shape.order < S.shape.order)
+        T = tens_addaxes(T, 0, S.shape.order - T.shape.order);
 
-    assert (skip_axes <= S.order);
+    assert (skip_axes <= S.shape.order);
 
-    for (int8_t i = 0; i < S.order - skip_axes; i++) {
-        if (S.shape[i] == T.shape[i])
+    for (int8_t i = 0; i < S.shape.order - skip_axes; i++) {
+        if (S.shape.shape[i] == T.shape.shape[i])
             continue;
 
-        if (S.shape[i] == 1) {
-            S.shape[i] = T.shape[i];
+        if (S.shape.shape[i] == 1) {
+            S.shape.shape[i] = T.shape.shape[i];
             S.strides[i] = 0;
             continue;
         }
 
-        if (T.shape[i] == 1) {
-            T.shape[i] = S.shape[i];
+        if (T.shape.shape[i] == 1) {
+            T.shape.shape[i] = S.shape.shape[i];
             T.strides[i] = 0;
             continue;
         }

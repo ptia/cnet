@@ -1,11 +1,11 @@
-#include "tensindex.h"
+#include "tens_index.h"
 
-bool tensindex_next(struct tensindex *index)
+bool tens_index_next(struct tens_index *index)
 {
-    return tensindex_nextaxis(index, index->order - 1);
+    return tens_index_nextaxis(index, index->order - 1);
 }
 
-bool tensindex_nextaxis(struct tensindex *index, int8_t axis)
+bool tens_index_nextaxis(struct tens_index *index, int8_t axis)
 {
     assert (axis <= index->order);
     int8_t i = axis + 1;

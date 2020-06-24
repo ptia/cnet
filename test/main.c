@@ -1,9 +1,9 @@
 #include "minunit.h"
 #include "tensor.c"
-#include "tensindex.c"
+#include "tens_index.c"
 
 int main()
 {
     MU_RUN_SUITE(test_tensor);
-    MU_RUN_SUITE(test_tensindex);
+    MU_RUN_SUITE(test_tens_index);
 }

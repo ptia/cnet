@@ -3,16 +3,16 @@
 #include "tensor.h"
 #include <stdbool.h>
 
-struct tensindex {
+struct tens_index {
     size_t index[TENS_MAX_ORDER];   
     size_t shape[TENS_MAX_ORDER];
     const int8_t order;
 };
 
 static inline
-struct tensindex tensindex(const size_t *shape, int8_t order)
+struct tens_index tens_index(const size_t *shape, int8_t order)
 {
-    struct tensindex out = (struct tensindex) { 
+    struct tens_index out = (struct tens_index) { 
         .index = {0},
         .order = order
     };
@@ -21,5 +21,5 @@ struct tensindex tensindex(const size_t *shape, int8_t order)
     return out;
 }
 
-bool tensindex_next(struct tensindex *index);
-bool tensindex_nextaxis(struct tensindex *index, int8_t axis);
+bool tens_index_next(struct tens_index *index);
+bool tens_index_nextaxis(struct tens_index *index, int8_t axis);

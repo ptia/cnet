@@ -13,11 +13,11 @@ MU_TEST(test_tens_get)
         9, 10,
         11, 12
     };
-    struct tensor A = tensor(arr, 3, (size_t []) {2, 3, 2});
+    struct tensor A = tensor(arr, (struct tens_shape) {3, {2, 3, 2}});
 
-    mu_assert_int_eq(2, A.shape[0]);
-    mu_assert_int_eq(3, A.shape[1]);
-    mu_assert_int_eq(2, A.shape[2]);
+    mu_assert_int_eq(2, A.shape.shape[0]);
+    mu_assert_int_eq(3, A.shape.shape[1]);
+    mu_assert_int_eq(2, A.shape.shape[2]);
 
     mu_assert_float_eq(12, tens_get(A, (size_t []) {1, 2, 1}));
     mu_assert_float_eq(6, tens_get(A, (size_t []) {0, 2, 1}));
@@ -25,11 +25,11 @@ MU_TEST(test_tens_get)
 
 MU_TEST(test_tens_zeros)
 {
-    struct tensor T = tens_zeros(3, (size_t []) {2, 3, 3});
+    struct tensor T = tens_zeros((struct tens_shape) {3, {2, 3, 3}});
     
-    mu_assert_int_eq(2, T.shape[0]);
-    mu_assert_int_eq(3, T.shape[1]);
-    mu_assert_int_eq(3, T.shape[2]);
+    mu_assert_int_eq(2, T.shape.shape[0]);
+    mu_assert_int_eq(3, T.shape.shape[1]);
+    mu_assert_int_eq(3, T.shape.shape[2]);
 
     mu_assert_float_eq(0, tens_get(T, (size_t []) {1, 2, 2}));
     free(T.arr);
@@ -46,8 +46,8 @@ MU_TEST(test_tens_reshape)
         9, 10,
         11, 12
     };
-    struct tensor S = tensor(arr, 3, (size_t []) {2, 3, 2});
-    struct tensor T = tens_reshape(S, 1, (size_t []) {2 * 3 * 2});
+    struct tensor S = tensor(arr, (struct tens_shape) {3, {2, 3, 2}});
+    struct tensor T = tens_reshape(S, (struct tens_shape) {1, {2 * 3 * 2}});
 
     mu_assert_float_eq(6, tens_get(S, (size_t []) {0, 2, 1}));
     mu_assert_float_eq(6, tens_get(T, (size_t []) {5}));
@@ -70,13 +70,14 @@ MU_TEST(test_tens_slice)
         11, 12
     };
 
-    struct tensor T = tensor(arr, 3, (size_t []) {2, 3, 2});
-    struct tensor S = tens_slice(T, (size_t []) {0, 1, 0}, (size_t[]) {2, 2, 2});
+    struct tensor T = tensor(arr, (struct tens_shape) {3, {2, 3, 2}});
+    struct tensor S = tens_slice(T, 
+            (size_t []) {0, 1, 0}, (size_t[]) {2, 2, 2});
 
-    mu_assert_int_eq(3, S.order);
-    mu_assert_int_eq(2, S.shape[0]);
-    mu_assert_int_eq(1, S.shape[1]);
-    mu_assert_int_eq(2, S.shape[2]);
+    mu_assert_int_eq(3, S.shape.order);
+    mu_assert_int_eq(2, S.shape.shape[0]);
+    mu_assert_int_eq(1, S.shape.shape[1]);
+    mu_assert_int_eq(2, S.shape.shape[2]);
     
     mu_assert_float_eq(9, tens_get(S, (size_t []) {1, 0, 0}));
 }
@@ -92,13 +93,13 @@ MU_TEST(test_tens_swapaxes)
         9, 10,
         11, 12
     };
-    struct tensor T = tensor(arr, 3, (size_t []) {2, 3, 2});
+    struct tensor T = tensor(arr, (struct tens_shape) {3, {2, 3, 2}});
     struct tensor S = tens_swapaxes(T, 0, 2);
 
-    mu_assert_int_eq(3, S.order);
-    mu_assert_int_eq(2, S.shape[0]);
-    mu_assert_int_eq(3, S.shape[1]);
-    mu_assert_int_eq(2, S.shape[2]);
+    mu_assert_int_eq(3, S.shape.order);
+    mu_assert_int_eq(2, S.shape.shape[0]);
+    mu_assert_int_eq(3, S.shape.shape[1]);
+    mu_assert_int_eq(2, S.shape.shape[2]);
 
     mu_assert_float_eq(9, tens_get(S, (size_t []) {0, 1, 1}));
 }
@@ -114,7 +115,7 @@ MU_TEST(test_tens_scalarmul)
         9, 10,
         11, 12
     };
-    struct tensor T = tensor(arr, 3, (size_t []) {2, 3, 2});
+    struct tensor T = tensor(arr, (struct tens_shape) {3, {2, 3, 2}});
     tens_scalarmul(T, 2);
 
     mu_assert_float_eq(2, tens_get(T, (size_t []) {0, 0, 0}));
@@ -133,8 +134,8 @@ MU_TEST(test_tens_add)
         9, 10,
         11, 12
     };
-    struct tensor T1 = tensor(arr1, 2, (size_t []) {3, 2});
-    struct tensor T2 = tensor(arr2, 2, (size_t []) {3, 2});
+    struct tensor T1 = tensor(arr1, (struct tens_shape) {2, {3, 2}});
+    struct tensor T2 = tensor(arr2, (struct tens_shape) {2, {3, 2}});
 
     tens_add(T1, T2, T2);
 
@@ -159,15 +160,15 @@ MU_TEST(test_tens_addaxes_single)
         9, 10,
         11, 12
     };
-    struct tensor T = tensor(arr, 3, (size_t []) {2, 3, 2});
+    struct tensor T = tensor(arr, (struct tens_shape) {3, {2, 3, 2}});
     struct tensor S = tens_addaxes(T, 1, 1);
 
-    mu_assert_int_eq(4, S.order);
+    mu_assert_int_eq(4, S.shape.order);
 
-    mu_assert_int_eq(2, S.shape[0]);
-    mu_assert_int_eq(1, S.shape[1]);
-    mu_assert_int_eq(3, S.shape[2]);
-    mu_assert_int_eq(2, S.shape[3]);
+    mu_assert_int_eq(2, S.shape.shape[0]);
+    mu_assert_int_eq(1, S.shape.shape[1]);
+    mu_assert_int_eq(3, S.shape.shape[2]);
+    mu_assert_int_eq(2, S.shape.shape[3]);
 
     mu_assert_int_eq(6, S.strides[0]);
     mu_assert_int_eq(0, S.strides[1]);
@@ -184,15 +185,15 @@ MU_TEST(test_tens_addaxes_many)
         3, 4,
         5, 6,
     };
-    struct tensor T = tensor(arr, 2, (size_t []) {3, 2});
+    struct tensor T = tensor(arr, (struct tens_shape) {2, {3, 2}});
     struct tensor S = tens_addaxes(T, 0, 2);
 
-    mu_assert_int_eq(4, S.order);
+    mu_assert_int_eq(4, S.shape.order);
 
-    mu_assert_int_eq(1, S.shape[0]);
-    mu_assert_int_eq(1, S.shape[1]);
-    mu_assert_int_eq(3, S.shape[2]);
-    mu_assert_int_eq(2, S.shape[3]);
+    mu_assert_int_eq(1, S.shape.shape[0]);
+    mu_assert_int_eq(1, S.shape.shape[1]);
+    mu_assert_int_eq(3, S.shape.shape[2]);
+    mu_assert_int_eq(2, S.shape.shape[3]);
 
     mu_assert_int_eq(0, S.strides[0]);
     mu_assert_int_eq(0, S.strides[1]);
@@ -204,29 +205,29 @@ MU_TEST(test_tens_addaxes_many)
 
 MU_TEST(test_tens_broadcast)
 {
-    struct tensor S = tensor(NULL, 4, (size_t []) {3, 2, 1, 7});
-    struct tensor T = tensor(NULL, 3, (size_t []) {   2, 5, 7});
+    struct tensor S = tensor(NULL, (struct tens_shape) {4, {3, 2, 1, 7}});
+    struct tensor T = tensor(NULL, (struct tens_shape) {3, {   2, 5, 7}});
 
     struct tens_pair ST = tens_broadcast(S, T);
 
-    mu_assert_int_eq(3, ST.T.shape[0]);
-    mu_assert_int_eq(2, ST.T.shape[1]);
-    mu_assert_int_eq(5, ST.S.shape[2]);
-    mu_assert_int_eq(7, ST.T.shape[3]);
+    mu_assert_int_eq(3, ST.T.shape.shape[0]);
+    mu_assert_int_eq(2, ST.T.shape.shape[1]);
+    mu_assert_int_eq(5, ST.S.shape.shape[2]);
+    mu_assert_int_eq(7, ST.T.shape.shape[3]);
 }
 
 MU_TEST(test_tens_broadcastskipaxes)
 {
-    struct tensor S = tensor(NULL, 4, (size_t []) {3, 2, 1, 7});
-    struct tensor T = tensor(NULL, 3, (size_t []) {   2, 5, 3});
+    struct tensor S = tensor(NULL, (struct tens_shape) {4, {3, 2, 1, 7}});
+    struct tensor T = tensor(NULL, (struct tens_shape) {3, {   2, 5, 3}});
 
     struct tens_pair ST = tens_broadcastskipaxes(S, T, 1);
 
-    mu_assert_int_eq(3, ST.T.shape[0]);
-    mu_assert_int_eq(2, ST.T.shape[1]);
-    mu_assert_int_eq(5, ST.S.shape[2]);
-    mu_assert_int_eq(7, ST.S.shape[3]);
-    mu_assert_int_eq(3, ST.T.shape[3]);
+    mu_assert_int_eq(3, ST.T.shape.shape[0]);
+    mu_assert_int_eq(2, ST.T.shape.shape[1]);
+    mu_assert_int_eq(5, ST.S.shape.shape[2]);
+    mu_assert_int_eq(7, ST.S.shape.shape[3]);
+    mu_assert_int_eq(3, ST.T.shape.shape[3]);
 }
 
 MU_TEST(test_tens_matmul)
@@ -240,9 +241,9 @@ MU_TEST(test_tens_matmul)
         2, 3,
         4, 5
     };
-    struct tensor A = tensor(arra, 2, (size_t []) {2, 3});
-    struct tensor B = tensor(arrb, 2, (size_t []) {3, 2});
-    struct tensor D = tens_zeros(2, (size_t []) {2, 2});
+    struct tensor A = tensor(arra, (struct tens_shape) {2, {2, 3}});
+    struct tensor B = tensor(arrb, (struct tens_shape) {2, {3, 2}});
+    struct tensor D = tens_zeros((struct tens_shape) {2, {2, 2}});
 
     tens_matmul(A, B, D);
     mu_assert_float_eq(10, tens_get(D, (size_t []) {0, 0}));
@@ -265,9 +266,9 @@ MU_TEST(test_tens_matmul_broadcast)
         2, 3,
         4, 5
     };
-    struct tensor A = tensor(arra, 3, (size_t []) {2, 2, 3});
-    struct tensor B = tensor(arrb, 2, (size_t []) {3, 2});
-    struct tensor D = tens_zeros(3, (size_t []) {2, 2, 2});
+    struct tensor A = tensor(arra, (struct tens_shape) {3, {2, 2, 3}});
+    struct tensor B = tensor(arrb, (struct tens_shape) {2, {3, 2}});
+    struct tensor D = tens_zeros((struct tens_shape) {3, {2, 2, 2}});
 
     tens_matmul(A, B, D);
     mu_assert_float_eq(10, tens_get(D, (size_t []) {0, 0, 0}));
