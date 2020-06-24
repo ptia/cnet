@@ -2,7 +2,7 @@
 #include "tensindex.h"
 #include <assert.h>
 
-void tens_scalar_mul(struct tensor T, float l)
+void tens_scalarmul(struct tensor T, float l)
 {
     struct tensindex index = tensindex(T.shape, T.order);
     do {
@@ -24,13 +24,13 @@ void tens_add(struct tensor S, struct tensor T, struct tensor D)
     } while (tensindex_next(&index));
 }
 
-void tens_mat_mul(struct tensor S, struct tensor T, struct tensor D)
+void tens_matmul(struct tensor S, struct tensor T, struct tensor D)
 {
     assert (S.order >= 1);
     assert (T.order >= 1);
     assert (S.shape[S.order - 1] == T.shape[T.order - 2]);
 
-    struct tens_pair ST = tens_broadcast_skip_axes(S, T, 2);
+    struct tens_pair ST = tens_broadcastskipaxes(S, T, 2);
     S = ST.S; T = ST.T;
     int8_t order = S.order;
 
@@ -39,7 +39,7 @@ void tens_mat_mul(struct tensor S, struct tensor T, struct tensor D)
         D_shape[i] = S.shape[i];
     D_shape[order - 2] = S.shape[order - 2];
     D_shape[order - 1] = S.shape[order - 1];
-    assert (tens_match_shape(D, order, D_shape));
+    assert (tens_matchshape(D, order, D_shape));
 
     struct tensindex index = tensindex(S.shape, order);
     do {

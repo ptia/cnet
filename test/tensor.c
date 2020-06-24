@@ -81,7 +81,7 @@ MU_TEST(test_tens_slice)
     mu_assert_float_eq(9, tens_get(S, (size_t []) {1, 0, 0}));
 }
 
-MU_TEST(test_tens_swap_axes)
+MU_TEST(test_tens_swapaxes)
 {
     float arr[] = {
         1, 2,
@@ -93,7 +93,7 @@ MU_TEST(test_tens_swap_axes)
         11, 12
     };
     struct tensor T = tensor(arr, 3, (size_t []) {2, 3, 2});
-    struct tensor S = tens_swap_axes(T, 0, 2);
+    struct tensor S = tens_swapaxes(T, 0, 2);
 
     mu_assert_int_eq(3, S.order);
     mu_assert_int_eq(2, S.shape[0]);
@@ -103,7 +103,7 @@ MU_TEST(test_tens_swap_axes)
     mu_assert_float_eq(9, tens_get(S, (size_t []) {0, 1, 1}));
 }
 
-MU_TEST(test_tens_scalar_mul)
+MU_TEST(test_tens_scalarmul)
 {
     float arr[] = {
         1, 2,
@@ -115,7 +115,7 @@ MU_TEST(test_tens_scalar_mul)
         11, 12
     };
     struct tensor T = tensor(arr, 3, (size_t []) {2, 3, 2});
-    tens_scalar_mul(T, 2);
+    tens_scalarmul(T, 2);
 
     mu_assert_float_eq(2, tens_get(T, (size_t []) {0, 0, 0}));
     mu_assert_float_eq(20, tens_get(T, (size_t []) {1, 1, 1}));
@@ -148,7 +148,7 @@ MU_TEST(test_tens_add)
     mu_assert_float_eq(18, tens_get(T2, (size_t []) {2, 1}));
 }
 
-MU_TEST(test_tens_add_axes_single)
+MU_TEST(test_tens_addaxes_single)
 {
     float arr[] = {
         1, 2,
@@ -160,7 +160,7 @@ MU_TEST(test_tens_add_axes_single)
         11, 12
     };
     struct tensor T = tensor(arr, 3, (size_t []) {2, 3, 2});
-    struct tensor S = tens_add_axes(T, 1, 1);
+    struct tensor S = tens_addaxes(T, 1, 1);
 
     mu_assert_int_eq(4, S.order);
 
@@ -177,7 +177,7 @@ MU_TEST(test_tens_add_axes_single)
     mu_assert_float_eq(9, tens_get(S, (size_t []) {1, 0, 1, 0}));
 }
 
-MU_TEST(test_tens_add_axes_many)
+MU_TEST(test_tens_addaxes_many)
 {
     float arr[] = {
         1, 2,
@@ -185,7 +185,7 @@ MU_TEST(test_tens_add_axes_many)
         5, 6,
     };
     struct tensor T = tensor(arr, 2, (size_t []) {3, 2});
-    struct tensor S = tens_add_axes(T, 0, 2);
+    struct tensor S = tens_addaxes(T, 0, 2);
 
     mu_assert_int_eq(4, S.order);
 
@@ -215,12 +215,12 @@ MU_TEST(test_tens_broadcast)
     mu_assert_int_eq(7, ST.T.shape[3]);
 }
 
-MU_TEST(test_tens_broadcast_skip_axes)
+MU_TEST(test_tens_broadcastskipaxes)
 {
     struct tensor S = tensor(NULL, 4, (size_t []) {3, 2, 1, 7});
     struct tensor T = tensor(NULL, 3, (size_t []) {   2, 5, 3});
 
-    struct tens_pair ST = tens_broadcast_skip_axes(S, T, 1);
+    struct tens_pair ST = tens_broadcastskipaxes(S, T, 1);
 
     mu_assert_int_eq(3, ST.T.shape[0]);
     mu_assert_int_eq(2, ST.T.shape[1]);
@@ -229,7 +229,7 @@ MU_TEST(test_tens_broadcast_skip_axes)
     mu_assert_int_eq(3, ST.T.shape[3]);
 }
 
-MU_TEST(test_tens_mat_mul)
+MU_TEST(test_tens_matmul)
 {
     float arra[] = {
         0, 1, 2,
@@ -244,14 +244,14 @@ MU_TEST(test_tens_mat_mul)
     struct tensor B = tensor(arrb, 2, (size_t []) {3, 2});
     struct tensor D = tens_zeros(2, (size_t []) {2, 2});
 
-    tens_mat_mul(A, B, D);
+    tens_matmul(A, B, D);
     mu_assert_float_eq(10, tens_get(D, (size_t []) {0, 0}));
     mu_assert_float_eq(13, tens_get(D, (size_t []) {0, 1}));
     mu_assert_float_eq(28, tens_get(D, (size_t []) {1, 0}));
     mu_assert_float_eq(40, tens_get(D, (size_t []) {1, 1}));
 }
 
-MU_TEST(test_tens_mat_mul_broadcast)
+MU_TEST(test_tens_matmul_broadcast)
 {
     float arra[] = {
         0, 1, 2,
@@ -269,7 +269,7 @@ MU_TEST(test_tens_mat_mul_broadcast)
     struct tensor B = tensor(arrb, 2, (size_t []) {3, 2});
     struct tensor D = tens_zeros(3, (size_t []) {2, 2, 2});
 
-    tens_mat_mul(A, B, D);
+    tens_matmul(A, B, D);
     mu_assert_float_eq(10, tens_get(D, (size_t []) {0, 0, 0}));
     mu_assert_float_eq(13, tens_get(D, (size_t []) {0, 0, 1}));
     mu_assert_float_eq(28, tens_get(D, (size_t []) {0, 1, 0}));
@@ -287,13 +287,13 @@ MU_TEST_SUITE(test_tensor)
     MU_RUN_TEST(test_tens_zeros);
     MU_RUN_TEST(test_tens_reshape);
     MU_RUN_TEST(test_tens_slice);
-    MU_RUN_TEST(test_tens_swap_axes);
-    MU_RUN_TEST(test_tens_add_axes_single);
-    MU_RUN_TEST(test_tens_add_axes_many);
+    MU_RUN_TEST(test_tens_swapaxes);
+    MU_RUN_TEST(test_tens_addaxes_single);
+    MU_RUN_TEST(test_tens_addaxes_many);
     MU_RUN_TEST(test_tens_broadcast);
-    MU_RUN_TEST(test_tens_broadcast_skip_axes);
-    MU_RUN_TEST(test_tens_scalar_mul);
+    MU_RUN_TEST(test_tens_broadcastskipaxes);
+    MU_RUN_TEST(test_tens_scalarmul);
     MU_RUN_TEST(test_tens_add);
-    MU_RUN_TEST(test_tens_mat_mul);
-    MU_RUN_TEST(test_tens_mat_mul_broadcast);
+    MU_RUN_TEST(test_tens_matmul);
+    MU_RUN_TEST(test_tens_matmul_broadcast);
 }

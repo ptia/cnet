@@ -89,7 +89,7 @@ float tens_get(struct tensor T, const size_t *index)
 
 /* Get total linear size of the data (product of shape) */
 static inline
-size_t tens_shape_size(int8_t order, const size_t *shape)
+size_t tens_shapesize(int8_t order, const size_t *shape)
 {
     size_t size = 1;
     for (int8_t i = 0; i < order ; i++) {
@@ -102,7 +102,7 @@ size_t tens_shape_size(int8_t order, const size_t *shape)
 static inline
 size_t tens_size(struct tensor T)
 {
-    return tens_shape_size(T.order, T.shape);
+    return tens_shapesize(T.order, T.shape);
 }
 
 /* Test whether two tensors have the exact same shape and order */
@@ -114,7 +114,7 @@ bool tens_match(struct tensor S, struct tensor T)
 
 /* Test whether a tensor has an exact shape and order */
 static inline
-bool tens_match_shape(struct tensor S, int8_t order, const size_t *shape)
+bool tens_matchshape(struct tensor S, int8_t order, const size_t *shape)
 {
     return S.order == order && !memcmp(S.shape, shape, order);
 }
@@ -146,7 +146,7 @@ static inline
 struct tensor tens_zeros(int8_t order, const size_t *shape)
 {
     return tensor(
-        calloc(1, tens_shape_size(order, shape) * sizeof(float)),
+        calloc(1, tens_shapesize(order, shape) * sizeof(float)),
         order, shape
     );
 }
@@ -158,14 +158,14 @@ struct tensor tens_zeros(int8_t order, const size_t *shape)
 static inline
 struct tensor tens_reshape(struct tensor T, int8_t order, const size_t *shape)
 {
-    assert (tens_size(T) == tens_shape_size(order, shape));
+    assert (tens_size(T) == tens_shapesize(order, shape));
     return tensor(T.arr, order, shape);
 }
 
 /* Slice of T (same order), starting from start, 
  * extending for shape along all axes */
 static inline
-struct tensor tens_slice_shape(
+struct tensor tens_sliceshape(
         struct tensor T, const size_t *start, const size_t *shape)
 {
     struct tensor S = (struct tensor) {
@@ -195,12 +195,12 @@ struct tensor tens_slice(
         assert (end[i] <= T.shape[i]);
         shape[i] = end[i] - start[i];
     }
-    return tens_slice_shape(T, start, shape);
+    return tens_sliceshape(T, start, shape);
 }
 
 /* Swap axes (like matrix transpose). Will change shape */
 static inline
-struct tensor tens_swap_axes(struct tensor T, int8_t axis1, int8_t axis2)
+struct tensor tens_swapaxes(struct tensor T, int8_t axis1, int8_t axis2)
 {
     assert (axis1 < T.order && axis2 < T.order);
 
@@ -215,7 +215,7 @@ struct tensor tens_swap_axes(struct tensor T, int8_t axis1, int8_t axis2)
 /* Add an multiple axes to the tensor at dimension n. 
  * They will have length 1 */
 static inline
-struct tensor tens_add_axes(struct tensor T, int8_t axis, int8_t count)
+struct tensor tens_addaxes(struct tensor T, int8_t axis, int8_t count)
 {
     assert (axis <= T.order);
     assert (T.order + count <= TENS_MAX_ORDER);
@@ -242,14 +242,14 @@ struct tensor tens_add_axes(struct tensor T, int8_t axis, int8_t count)
 /* Broadcast two tensors together using numpy rules,
  * skipping lower n axes */
 static inline
-struct tens_pair tens_broadcast_skip_axes(
+struct tens_pair tens_broadcastskipaxes(
         struct tensor S, struct tensor T, int8_t skip_axes)
 {
     /* Match orders by adding axes at the highest dimension */
     if (S.order < T.order)
-        S = tens_add_axes(S, 0, T.order - S.order);
+        S = tens_addaxes(S, 0, T.order - S.order);
     if (T.order < S.order)
-        T = tens_add_axes(T, 0, S.order - T.order);
+        T = tens_addaxes(T, 0, S.order - T.order);
 
     assert (skip_axes <= S.order);
 
@@ -279,14 +279,14 @@ struct tens_pair tens_broadcast_skip_axes(
 static inline
 struct tens_pair tens_broadcast(struct tensor S, struct tensor T)
 {
-    return tens_broadcast_skip_axes(S, T, 0);
+    return tens_broadcastskipaxes(S, T, 0);
 }
 
 /* MODIFIERS */
 
 /* Multiply all elements of a tensor by a scalar 
  * T = lT  */
-void tens_scalar_mul(struct tensor T, float l);
+void tens_scalarmul(struct tensor T, float l);
 
 /* Add two matching tensors in place
  * D = S + T  */
@@ -294,4 +294,4 @@ void tens_add(struct tensor S, struct tensor T, struct tensor D);
 
 /* Matrix multiplication over the last two dimensions
  * U = S@T  */
-void tens_mat_mul(struct tensor S, struct tensor T, struct tensor D);
+void tens_matmul(struct tensor S, struct tensor T, struct tensor D);
