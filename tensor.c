@@ -44,9 +44,9 @@ void tens_matmul(struct tensor S, struct tensor T, struct tensor D)
 
     struct tens_index index = tens_index(S.shape.shape, order);
     do {
-        for (int i = 0; i < D.shape.shape[order - 2]; i++) {
-            for (int j = 0; j < D.shape.shape[order - 1]; j++) {
-                for (int k = 0; k < S.shape.shape[order - 1]; k++) {
+        for (size_t i = 0; i < D.shape.shape[order - 2]; i++) {
+            for (size_t j = 0; j < D.shape.shape[order - 1]; j++) {
+                for (size_t k = 0; k < S.shape.shape[order - 1]; k++) {
                     index.index[order - 2] = i; index.index[order - 1] = k;
                     float s = tens_get(S, index.index);
                     index.index[order - 2] = k; index.index[order - 1] = j;
