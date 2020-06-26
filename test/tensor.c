@@ -116,7 +116,7 @@ MU_TEST(test_tens_scalarmul)
         11, 12
     };
     struct tensor T = tensor(arr, (struct tens_shape) {3, {2, 3, 2}});
-    tens_scalarmul(T, 2);
+    tens_scalarmul(T, 2, &T);
 
     mu_assert_float_eq(2, tens_get(T, (size_t []) {0, 0, 0}));
     mu_assert_float_eq(20, tens_get(T, (size_t []) {1, 1, 1}));
@@ -137,7 +137,7 @@ MU_TEST(test_tens_add)
     struct tensor T1 = tensor(arr1, (struct tens_shape) {2, {3, 2}});
     struct tensor T2 = tensor(arr2, (struct tens_shape) {2, {3, 2}});
 
-    tens_add(T1, T2, T2);
+    tens_add(T1, T2, &T2);
 
     mu_assert_float_eq(1, tens_get(T1, (size_t []) {0, 0}));
     mu_assert_float_eq(8, tens_get(T2, (size_t []) {0, 0}));
@@ -245,7 +245,7 @@ MU_TEST(test_tens_matmul)
     struct tensor B = tensor(arrb, (struct tens_shape) {2, {3, 2}});
     struct tensor D = tens_zeros((struct tens_shape) {2, {2, 2}});
 
-    tens_matmul(A, B, D);
+    tens_matmul(A, B, &D);
     mu_assert_float_eq(10, tens_get(D, (size_t []) {0, 0}));
     mu_assert_float_eq(13, tens_get(D, (size_t []) {0, 1}));
     mu_assert_float_eq(28, tens_get(D, (size_t []) {1, 0}));
@@ -270,7 +270,7 @@ MU_TEST(test_tens_matmul_broadcast)
     struct tensor B = tensor(arrb, (struct tens_shape) {2, {3, 2}});
     struct tensor D = tens_zeros((struct tens_shape) {3, {2, 2, 2}});
 
-    tens_matmul(A, B, D);
+    tens_matmul(A, B, &D);
     mu_assert_float_eq(10, tens_get(D, (size_t []) {0, 0, 0}));
     mu_assert_float_eq(13, tens_get(D, (size_t []) {0, 0, 1}));
     mu_assert_float_eq(28, tens_get(D, (size_t []) {0, 1, 0}));

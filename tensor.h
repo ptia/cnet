@@ -274,13 +274,13 @@ struct tens_pair tens_broadcast(struct tensor S, struct tensor T)
 /* MODIFIERS */
 
 /* Multiply all elements of a tensor by a scalar 
- * T = lT  */
-void tens_scalarmul(struct tensor T, float l);
+ * D = lS  */
+struct tensor tens_scalarmul(struct tensor T, float l, struct tensor *D);
 
 /* Add two matching tensors in place
  * D = S + T  */
-void tens_add(struct tensor S, struct tensor T, struct tensor D);
+struct tensor tens_add(struct tensor S, struct tensor T, struct tensor *D);
 
 /* Matrix multiplication over the last two dimensions
  * U = S@T  */
-void tens_matmul(struct tensor S, struct tensor T, struct tensor D);
+struct tensor tens_matmul(struct tensor S, struct tensor T, struct tensor *D);

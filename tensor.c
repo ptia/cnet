@@ -2,19 +2,25 @@
 #include "tens_index.h"
 #include <assert.h>
 
-void tens_scalarmul(struct tensor T, float l)
+struct tensor tens_scalarmul(struct tensor T, float l, struct tensor *_D)
 {
+    struct tensor D = _D ? *_D : tens_zeros(T.shape);
+    assert (tens_match(T.shape, D.shape));
+
     struct tens_index index = tens_index(T.shape.shape, T.shape.order);
     do {
-        *tens_getp(T, index.index) *= l;
+        *tens_getp(D, index.index) = tens_get(T, index.index) * l;
     } while (tens_index_next(&index));
+
+    return D;
 }
 
-void tens_add(struct tensor S, struct tensor T, struct tensor D)
+struct tensor tens_add(
+        struct tensor S, struct tensor T, struct tensor *_D)
 {
     struct tens_pair ST = tens_broadcast(S, T);
-    S = ST.S;
-    T = ST.T;
+    S = ST.S; T = ST.T;
+    struct tensor D = _D ? *_D : tens_zeros(S.shape);
     assert (tens_match(S.shape, D.shape));
 
     struct tens_index index = tens_index(S.shape.shape, S.shape.order);
@@ -22,9 +28,12 @@ void tens_add(struct tensor S, struct tensor T, struct tensor D)
         *tens_getp(D, index.index) = 
             tens_get(S, index.index) + tens_get(T, index.index);
     } while (tens_index_next(&index));
+
+    return D;
 }
 
-void tens_matmul(struct tensor S, struct tensor T, struct tensor D)
+struct tensor tens_matmul(
+        struct tensor S, struct tensor T, struct tensor *_D)
 {
     assert (S.shape.order >= 1);
     assert (T.shape.order >= 1);
@@ -40,6 +49,7 @@ void tens_matmul(struct tensor S, struct tensor T, struct tensor D)
         D_shape.shape[i] = S.shape.shape[i];
     D_shape.shape[order - 2] = S.shape.shape[order - 2];
     D_shape.shape[order - 1] = S.shape.shape[order - 1];
+    struct tensor D = _D ? *_D : tens_zeros(D_shape);
     assert (tens_match(D.shape, D_shape));
 
     struct tens_index index = tens_index(S.shape.shape, order);
@@ -57,4 +67,6 @@ void tens_matmul(struct tensor S, struct tensor T, struct tensor D)
             }
         }
     } while (tens_index_nextaxis(&index, order - 2));
+
+    return D;
 }
