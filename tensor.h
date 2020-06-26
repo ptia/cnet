@@ -18,9 +18,7 @@
  * Indexes are C-like by defalt: first index changes slowly, last one quickly,
  * but this can be changed with striding.
  *
- * struct tensor (the view, not the data) is small enough to be passed by value
- * and all the functions here do so. This means that no function here will 
- * change the view that's passed to it (some change the data).
+ * No functions here change the view passed to them (some change the data).
  * It is possible to manually change shape and strides, but this might corrupt
  * access to the data.
  */
@@ -67,8 +65,8 @@ struct tens_pair {
  * (unless otherwise specified).
  * e.g.: tens_add() - Add two matching tensors element-wise
  *
- * All these functions take struct tensor by value, not pointer, so they won't
- * change the original view.
+ * All these functions take struct tensor by pointer to save on copying 
+ * arguments, but they won't change the original view.
  */
 
 
