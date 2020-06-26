@@ -20,7 +20,7 @@ struct tensor feedforward(
 
 struct nn_layer *dense_layer(size_t units)
 {
-    struct dense_layer *layer = malloc(sizeof(struct dense_layer));
+    struct dense_layer *layer = malloc(sizeof(*layer));
     layer->initialised = false;
     layer->units = units;
     layer->nn_layer.feedforward = feedforward;

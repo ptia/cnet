@@ -151,6 +151,9 @@ struct tens_pair tens_broadcast(struct tensor *S, struct tensor *T);
 
 /* MODIFIERS */
 
+/* Apply function to all scalar elements */
+struct tensor tens_apply(
+        struct tensor *T, float (*f) (float), struct tensor *D);
 /* Multiply all elements of a tensor by a scalar 
  * D = lS  */
 struct tensor tens_scalarmul(struct tensor *T, float l, struct tensor *D);

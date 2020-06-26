@@ -148,6 +148,21 @@ struct tens_pair tens_broadcast(struct tensor *S, struct tensor *T)
 
 
 /* MODIFIERS */
+
+struct tensor tens_apply(
+        struct tensor *T, float (*f) (float), struct tensor *_D)
+{
+    struct tensor D = _D ? *_D : tens_zeros(T->shape);
+    assert (tens_match(T->shape, D.shape));
+
+    struct tens_index index = tens_index(T->shape.shape, T->shape.order);
+    do {
+        *tens_getp(D, index.index) = f(tens_get(*T, index.index));
+    } while (tens_index_next(&index));
+
+    return D;
+}
+
 struct tensor tens_scalarmul(struct tensor *T, float l, struct tensor *_D)
 {
     struct tensor D = _D ? *_D : tens_zeros(T->shape);
