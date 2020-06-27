@@ -64,6 +64,12 @@ struct tensor tens_swapaxes(struct tensor *T, int8_t axis1, int8_t axis2)
     return S;
 }
 
+struct tensor tens_transpose(struct tensor *T)
+{
+    assert (T->shape.order >= 2);
+    return tens_swapaxes(T, T->shape.order - 1, T->shape.order - 2);
+}
+
 struct tensor tens_slice(
         struct tensor *T, const size_t *start, const size_t *end)
 {

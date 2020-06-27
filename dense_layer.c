@@ -18,11 +18,24 @@ struct tensor feedforward(
     return tens_matmul(in, &layer->weights, out);
 }
 
+static
+struct tensor backprop(
+        struct nn_layer *nn_layer, struct tensor *in, struct tensor *out)
+{
+    struct dense_layer *layer = getparent(
+            nn_layer, struct dense_layer, nn_layer);
+    assert(layer->initialised);
+
+    struct tensor weightsT = tens_transpose(&layer->weights);
+    return tens_matmul(in, &weightsT, out);
+}
+
 struct nn_layer *dense_layer(size_t units)
 {
     struct dense_layer *layer = malloc(sizeof(*layer));
     layer->initialised = false;
     layer->units = units;
     layer->nn_layer.feedforward = feedforward;
+    layer->nn_layer.backprop = backprop;
     return &layer->nn_layer;
 }

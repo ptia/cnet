@@ -137,6 +137,9 @@ struct tensor tens_slice(
 /* Swap axes (like matrix transpose). Will change shape */
 struct tensor tens_swapaxes(struct tensor *T, int8_t axis1, int8_t axis2);
 
+/* Matrix transpose (swap last two axes) */
+struct tensor tens_transpose(struct tensor *T);
+
 /* Add an multiple axes to the tensor at dimension n. 
  * They will have length 1 */
 struct tensor tens_addaxes(struct tensor *T, int8_t axis, int8_t count);
