@@ -2,18 +2,18 @@
 
 bool tens_index_next(struct tens_index *index)
 {
-    return tens_index_nextaxis(index, index->order - 1);
+    return tens_index_nextaxis(index, index->shape.order - 1);
 }
 
 bool tens_index_nextaxis(struct tens_index *index, int8_t axis)
 {
-    assert (axis <= index->order);
+    assert (axis <= index->shape.order);
     int8_t i = axis + 1;
     do {
         if (i == 0)
             return false;
         i--;
-        index->index[i] = (index->index[i] + 1) % index->shape[i];
+        index->index[i] = (index->index[i] + 1) % index->shape.shape[i];
     } while (index->index[i] == 0);
     return true;
 }

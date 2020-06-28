@@ -5,8 +5,7 @@ MU_TEST(test_tens_index_next)
 {
     struct tens_index index = (struct tens_index) {
         .index = {0, 0, 0}, 
-        .shape = {2, 1, 2}, 
-        .order = 3
+        .shape = {3, {2, 1, 2}}, 
     };
 
     mu_check(tens_index_next(&index));

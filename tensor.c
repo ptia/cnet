@@ -161,7 +161,7 @@ struct tensor tens_apply(
     struct tensor D = _D ? *_D : tens_zeros(T->shape);
     assert (tens_match(T->shape, D.shape));
 
-    struct tens_index index = tens_index(T->shape.shape, T->shape.order);
+    struct tens_index index = tens_index(T->shape);
     do {
         *tens_getp(D, index.index) = f(tens_get(*T, index.index));
     } while (tens_index_next(&index));
@@ -174,7 +174,7 @@ struct tensor tens_scalarmul(struct tensor *T, float l, struct tensor *_D)
     struct tensor D = _D ? *_D : tens_zeros(T->shape);
     assert (tens_match(T->shape, D.shape));
 
-    struct tens_index index = tens_index(T->shape.shape, T->shape.order);
+    struct tens_index index = tens_index(T->shape);
     do {
         *tens_getp(D, index.index) = tens_get(*T, index.index) * l;
     } while (tens_index_next(&index));
@@ -189,7 +189,7 @@ struct tensor tens_add(
     struct tensor D = _D ? *_D : tens_zeros(ST.S.shape);
     assert (tens_match(ST.S.shape, D.shape));
 
-    struct tens_index index = tens_index(ST.S.shape.shape, ST.S.shape.order);
+    struct tens_index index = tens_index(ST.S.shape);
     do {
         *tens_getp(D, index.index) = 
             tens_get(ST.S, index.index) + tens_get(ST.T, index.index);
@@ -217,7 +217,7 @@ struct tensor tens_matmul(
     struct tensor D = _D ? *_D : tens_zeros(D_shape);
     assert (tens_match(D.shape, D_shape));
 
-    struct tens_index index = tens_index(ST.S.shape.shape, order);
+    struct tens_index index = tens_index(ST.S.shape);
     do {
         for (size_t i = 0; i < D.shape.shape[order - 2]; i++) {
             for (size_t j = 0; j < D.shape.shape[order - 1]; j++) {

@@ -152,6 +152,7 @@ struct tens_pair tens_broadcastskipaxes(
 /* Broadcast two tensors using numpy rules, matching all axes */
 struct tens_pair tens_broadcast(struct tensor *S, struct tensor *T);
 
+
 /* MODIFIERS */
 
 /* Apply function to all scalar elements */
