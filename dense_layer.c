@@ -9,6 +9,8 @@ struct tensor feedforward(
     struct dense_layer *layer = getparent(
             nn_layer, struct dense_layer, nn_layer);
 
+    assert (data_in->shape.order <= 2);
+
     if (!layer->initialised) {
         layer->weights = tens_zeros((struct tens_shape) { 
                     2, {
@@ -28,7 +30,9 @@ struct tensor backprop(
 {
     struct dense_layer *layer = getparent(
             nn_layer, struct dense_layer, nn_layer);
+
     assert(layer->initialised);
+    assert (err_in->shape.order <= 2);
 
     struct tensor weightsT = tens_transpose(&layer->weights);
     return tens_matmul(err_in, &weightsT, err_out);
