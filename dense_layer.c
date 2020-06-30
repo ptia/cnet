@@ -12,8 +12,8 @@ struct tensor feedforward(
     if (!layer->initialised) {
         layer->weights = tens_zeros((struct tens_shape) { 
                     2, {
+                        data_in->shape.shape[data_in->shape.order - 1],
                         layer->units, 
-                        data_in->shape.shape[data_in->shape.order - 1]
                     }});
         layer->initialised = true;
     }
