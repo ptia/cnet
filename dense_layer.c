@@ -1,6 +1,15 @@
 #include "dense_layer.h"
 #include <stdlib.h>
 
+struct dense_layer {
+    union {
+        size_t units;
+        struct tensor weights;
+    };
+    bool initialised;
+    struct nn_layer nn_layer;
+};
+
 static
 struct tensor feedforward(
         struct nn_layer *nn_layer, 
@@ -12,11 +21,12 @@ struct tensor feedforward(
     assert (data_in->shape.order <= 2);
 
     if (!layer->initialised) {
-        layer->weights = tens_zeros((struct tens_shape) { 
-                    2, {
-                        data_in->shape.shape[data_in->shape.order - 1],
-                        layer->units, 
-                    }});
+        struct tens_shape weights_shape = (struct tens_shape) { 
+                2, {
+                    data_in->shape.shape[data_in->shape.order - 1],
+                    layer->units, 
+                }};
+        layer->weights = tens_zeros(weights_shape);
         layer->initialised = true;
     }
 
@@ -47,8 +57,17 @@ void descend(
             nn_layer, struct dense_layer, nn_layer);
 
     assert(layer->initialised);
+    assert(data_in->shape.order == 2);
+    assert(err_in->shape.order == 2);
 
-    //TODO
+    // TODO this is allocating new Dweights_ and Dweights every time
+    // (err_in[:, np.newaxis, :] * data_in[:, :, np.newaxis]).sum(axis=0)
+    struct tensor data_in_ = tens_addaxes(data_in, 0, 1);
+    struct tensor err_in_ = tens_addaxes(err_in, 1, 1);
+    struct tensor Dweights_ = tens_entrymul(&data_in_, &err_in_, NULL);
+    struct tensor Dweights = tens_sumaxis(&Dweights_, 0, NULL);
+    tens_scalarmul(&Dweights, eta, &Dweights);
+    tens_add(&layer->weights, &Dweights, &layer->weights);
 }
 
 struct nn_layer *dense_layer(size_t units)

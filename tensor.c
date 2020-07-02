@@ -198,6 +198,22 @@ struct tensor tens_add(
     return D;
 }
 
+struct tensor tens_entrymul(
+        struct tensor *S, struct tensor *T, struct tensor *_D)
+{
+    struct tens_pair ST = tens_broadcast(S, T);
+    struct tensor D = _D ? *_D : tens_zeros(ST.S.shape);
+    assert (tens_match(ST.S.shape, D.shape));
+
+    struct tens_index index = tens_index(ST.S.shape);
+    do {
+        *tens_getp(D, index.index) = 
+            tens_get(ST.S, index.index) * tens_get(ST.T, index.index);
+    } while (tens_index_next(&index));
+
+    return D;
+}
+
 struct tensor tens_matmul(
         struct tensor *S, struct tensor *T, struct tensor *_D)
 {
