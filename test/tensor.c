@@ -282,6 +282,31 @@ MU_TEST(test_tens_matmul_broadcast)
     mu_assert_float_eq(94, tens_get(D, (size_t []) {1, 1, 1}));
 }
 
+MU_TEST(test_tens_sumaxis)
+{
+    float arr[] = {
+        1, 2,
+        3, 4,
+        5, 6,
+
+        7, 8,
+        9, 10,
+        11, 12
+    };
+    struct tensor T = tensor(arr, (struct tens_shape) {3, {2, 3, 2}});
+
+    struct tensor S = tens_sumaxis(&T, 1, NULL);
+    
+    mu_assert_int_eq(2, S.shape.order);
+    mu_assert_int_eq(2, S.shape.shape[0]);
+    mu_assert_int_eq(2, S.shape.shape[1]);
+
+    mu_assert_float_eq(9, tens_get(S, (size_t[]) {0, 0}));
+    mu_assert_float_eq(12, tens_get(S, (size_t[]) {0, 1}));
+    mu_assert_float_eq(27, tens_get(S, (size_t[]) {1, 0}));
+    mu_assert_float_eq(30, tens_get(S, (size_t[]) {1, 1}));
+}
+
 MU_TEST_SUITE(test_tensor)
 {
     MU_RUN_TEST(test_tens_get);
@@ -297,4 +322,5 @@ MU_TEST_SUITE(test_tensor)
     MU_RUN_TEST(test_tens_add);
     MU_RUN_TEST(test_tens_matmul);
     MU_RUN_TEST(test_tens_matmul_broadcast);
+    MU_RUN_TEST(test_tens_sumaxis);
 }

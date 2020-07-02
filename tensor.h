@@ -167,6 +167,11 @@ struct tensor tens_scalarmul(struct tensor *T, float l, struct tensor *D);
 struct tensor tens_add(struct tensor *S, struct tensor *T, struct tensor *D);
 
 /* Matrix multiplication over the last two dimensions
- * U = S@T  */
+ * D = S@T  */
 struct tensor tens_matmul(
         struct tensor *S, struct tensor *T, struct tensor *D);
+
+/* Sum tensor along axis. Result will have same shape as input, minus
+ * the summed axis */
+struct tensor tens_sumaxis(
+        struct tensor *S, int8_t axis, struct tensor *D);

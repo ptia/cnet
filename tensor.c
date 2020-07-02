@@ -221,17 +221,43 @@ struct tensor tens_matmul(
     do {
         for (size_t i = 0; i < D.shape.shape[order - 2]; i++) {
             for (size_t j = 0; j < D.shape.shape[order - 1]; j++) {
+                index.index[order - 2] = i; index.index[order - 1] = j;
+                float *d = tens_getp(D, index.index);
+                *d = 0;
                 for (size_t k = 0; k < ST.S.shape.shape[order - 1]; k++) {
                     index.index[order - 2] = i; index.index[order - 1] = k;
                     float s = tens_get(ST.S, index.index);
                     index.index[order - 2] = k; index.index[order - 1] = j;
                     float t = tens_get(ST.T, index.index);
-                    index.index[order - 2] = i; index.index[order - 1] = j;
-                    *tens_getp(D, index.index) += s * t;
+                    *d += s * t;
                 }
             }
         }
-    } while (tens_index_nextaxis(&index, order - 2));
+    } while (tens_index_nextaxis(&index, order - 3));
 
+    return D;
+}
+
+struct tensor tens_sumaxis(
+        struct tensor *S, int8_t axis, struct tensor *_D)
+{
+    assert (axis < S->shape.order);
+
+    struct tens_shape D_shape;
+    D_shape.order = S->shape.order - 1;
+    for (int8_t i = 0; i < D_shape.order; i++) {
+        if (i < axis)
+            D_shape.shape[i] = S->shape.shape[i];
+        else
+            D_shape.shape[i] = S->shape.shape[i + 1];
+    }
+    struct tensor D = _D ? *_D : tens_zeros(D_shape);
+    assert (tens_match(D.shape, D_shape));
+
+    struct tensor D_broad = tens_addaxes(&D, axis, 1);
+    D_broad.shape.shape[axis] = S->shape.shape[axis];
+
+    tens_add(S, &D_broad, &D_broad);
+    
     return D;
 }

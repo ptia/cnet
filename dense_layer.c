@@ -45,6 +45,7 @@ void descend(
 {
     struct dense_layer *layer = getparent(
             nn_layer, struct dense_layer, nn_layer);
+
     assert(layer->initialised);
 
     //TODO
