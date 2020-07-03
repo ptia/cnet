@@ -38,7 +38,7 @@ struct tensor tens_sliceshape(
         struct tensor *T, const size_t *start, const size_t *shape)
 {
     struct tensor S = (struct tensor) {
-        .arr = tens_getp(*T, start),
+        .arr = tens_getp(T, start),
         .shape.order = T->shape.order,
     };
 
@@ -155,67 +155,67 @@ struct tens_pair tens_broadcast(struct tensor *S, struct tensor *T)
 
 /* MODIFIERS */
 
-struct tensor tens_apply(
-        struct tensor *T, float (*f) (float), struct tensor *_D)
+void tens_apply(
+        struct tensor *T, float (*f) (float), struct tensor *D)
 {
-    struct tensor D = _D ? *_D : tens_zeros(T->shape);
-    assert (tens_match(T->shape, D.shape));
+    if (tens_null(D))
+        *D = tens_zeros(T->shape);
+    else
+        assert (tens_match(D->shape, T->shape));
 
     struct tens_index index = tens_index(T->shape);
     do {
-        *tens_getp(D, index.index) = f(tens_get(*T, index.index));
+        *tens_getp(D, index.index) = f(tens_get(T, index.index));
     } while (tens_index_next(&index));
-
-    return D;
 }
 
-struct tensor tens_scalarmul(struct tensor *T, float l, struct tensor *_D)
+void tens_scalarmul(struct tensor *T, float l, struct tensor *D)
 {
-    struct tensor D = _D ? *_D : tens_zeros(T->shape);
-    assert (tens_match(T->shape, D.shape));
+    if (tens_null(D))
+        *D = tens_zeros(T->shape);
+    else
+        assert (tens_match(D->shape, T->shape));
 
     struct tens_index index = tens_index(T->shape);
     do {
-        *tens_getp(D, index.index) = tens_get(*T, index.index) * l;
+        *tens_getp(D, index.index) = tens_get(T, index.index) * l;
     } while (tens_index_next(&index));
-
-    return D;
 }
 
-struct tensor tens_add(
-        struct tensor *S, struct tensor *T, struct tensor *_D)
+void tens_add(
+        struct tensor *S, struct tensor *T, struct tensor *D)
 {
     struct tens_pair ST = tens_broadcast(S, T);
-    struct tensor D = _D ? *_D : tens_zeros(ST.S.shape);
-    assert (tens_match(ST.S.shape, D.shape));
+    if (tens_null(D))
+        *D = tens_zeros(ST.S.shape);
+    else
+        assert (tens_match(D->shape, ST.S.shape));
 
     struct tens_index index = tens_index(ST.S.shape);
     do {
         *tens_getp(D, index.index) = 
-            tens_get(ST.S, index.index) + tens_get(ST.T, index.index);
+            tens_get(&ST.S, index.index) + tens_get(&ST.T, index.index);
     } while (tens_index_next(&index));
-
-    return D;
 }
 
-struct tensor tens_entrymul(
-        struct tensor *S, struct tensor *T, struct tensor *_D)
+void tens_entrymul(
+        struct tensor *S, struct tensor *T, struct tensor *D)
 {
     struct tens_pair ST = tens_broadcast(S, T);
-    struct tensor D = _D ? *_D : tens_zeros(ST.S.shape);
-    assert (tens_match(ST.S.shape, D.shape));
+    if (tens_null(D))
+        *D = tens_zeros(ST.S.shape);
+    else
+        assert (tens_match(D->shape, ST.S.shape));
 
     struct tens_index index = tens_index(ST.S.shape);
     do {
         *tens_getp(D, index.index) = 
-            tens_get(ST.S, index.index) * tens_get(ST.T, index.index);
+            tens_get(&ST.S, index.index) * tens_get(&ST.T, index.index);
     } while (tens_index_next(&index));
-
-    return D;
 }
 
-struct tensor tens_matmul(
-        struct tensor *S, struct tensor *T, struct tensor *_D)
+void tens_matmul(
+        struct tensor *S, struct tensor *T, struct tensor *D)
 {
     assert (S->shape.order >= 1);
     assert (T->shape.order >= 1);
@@ -230,32 +230,33 @@ struct tensor tens_matmul(
         D_shape.shape[i] = ST.S.shape.shape[i];
     D_shape.shape[order - 2] = ST.S.shape.shape[order - 2];
     D_shape.shape[order - 1] = ST.S.shape.shape[order - 1];
-    struct tensor D = _D ? *_D : tens_zeros(D_shape);
-    assert (tens_match(D.shape, D_shape));
+
+    if (tens_null(D))
+        *D = tens_zeros(D_shape);
+    else
+        assert (tens_match(D->shape, D_shape));
 
     struct tens_index index = tens_index(ST.S.shape);
     do {
-        for (size_t i = 0; i < D.shape.shape[order - 2]; i++) {
-            for (size_t j = 0; j < D.shape.shape[order - 1]; j++) {
+        for (size_t i = 0; i < D->shape.shape[order - 2]; i++) {
+            for (size_t j = 0; j < D->shape.shape[order - 1]; j++) {
                 index.index[order - 2] = i; index.index[order - 1] = j;
                 float *d = tens_getp(D, index.index);
                 *d = 0;
                 for (size_t k = 0; k < ST.S.shape.shape[order - 1]; k++) {
                     index.index[order - 2] = i; index.index[order - 1] = k;
-                    float s = tens_get(ST.S, index.index);
+                    float s = tens_get(&ST.S, index.index);
                     index.index[order - 2] = k; index.index[order - 1] = j;
-                    float t = tens_get(ST.T, index.index);
+                    float t = tens_get(&ST.T, index.index);
                     *d += s * t;
                 }
             }
         }
     } while (tens_index_nextaxis(&index, order - 3));
-
-    return D;
 }
 
-struct tensor tens_sumaxis(
-        struct tensor *S, int8_t axis, struct tensor *_D)
+void tens_sumaxis(
+        struct tensor *S, int8_t axis, struct tensor *D)
 {
     assert (axis < S->shape.order);
 
@@ -267,13 +268,14 @@ struct tensor tens_sumaxis(
         else
             D_shape.shape[i] = S->shape.shape[i + 1];
     }
-    struct tensor D = _D ? *_D : tens_zeros(D_shape);
-    assert (tens_match(D.shape, D_shape));
 
-    struct tensor D_broad = tens_addaxes(&D, axis, 1);
+    if (tens_null(D))
+        *D = tens_zeros(D_shape);
+    else
+        assert (tens_match(D->shape, D_shape));
+
+    struct tensor D_broad = tens_addaxes(D, axis, 1);
     D_broad.shape.shape[axis] = S->shape.shape[axis];
 
     tens_add(S, &D_broad, &D_broad);
-    
-    return D;
 }

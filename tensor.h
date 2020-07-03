@@ -11,6 +11,8 @@
 
 #define TENS_MAX_ORDER 4
 
+#define TENS_NULL ((struct tensor) {.arr = NULL})
+
 /* STRUCT TENSOR
  * 
  * Each instance is a view on an underlying data array (arr),
@@ -74,19 +76,19 @@ struct tens_pair {
 
 /* Get pointer to (scalar) element in tensor */
 static inline
-float *tens_getp(struct tensor T, const size_t *index)
+float *tens_getp(struct tensor *T, const size_t *index)
 {
     size_t offset = 0;
-    for (int8_t i = 0; i < T.shape.order; i++) {
-        assert (index[i] < T.shape.shape[i]);
-        offset += T.strides[i] * index[i];
+    for (int8_t i = 0; i < T->shape.order; i++) {
+        assert (index[i] < T->shape.shape[i]);
+        offset += T->strides[i] * index[i];
     }
-    return &T.arr[offset];
+    return &T->arr[offset];
 }
 
 /* Get value of (scalar) element in tensor */
 static inline
-float tens_get(struct tensor T, const size_t *index)
+float tens_get(struct tensor *T, const size_t *index)
 {
     return *tens_getp(T, index);
 }
@@ -109,6 +111,12 @@ bool tens_match(struct tens_shape s1, struct tens_shape s2)
     return s1.order == s2.order && !memcmp(s1.shape, s2.shape, s1.order);
 }
 
+/* Test if a tensor is unallocated */
+static inline
+bool tens_null(struct tensor *T)
+{
+    return T->arr == NULL;
+}
 
 /* CREATORS */
 
@@ -156,28 +164,28 @@ struct tens_pair tens_broadcast(struct tensor *S, struct tensor *T);
 /* MODIFIERS */
 
 /* Apply function to all scalar elements */
-struct tensor tens_apply(
+void tens_apply(
         struct tensor *T, float (*f) (float), struct tensor *D);
 
 /* Multiply all elements of a tensor by a scalar 
  * D = lS  */
-struct tensor tens_scalarmul(struct tensor *T, float l, struct tensor *D);
+void tens_scalarmul(struct tensor *T, float l, struct tensor *D);
 
 /* Add two matching tensors
  * D = S + T  */
-struct tensor tens_add(struct tensor *S, struct tensor *T, struct tensor *D);
+void tens_add(struct tensor *S, struct tensor *T, struct tensor *D);
 
 /* Entry-wise multiply two tensors
  * D = S * T  */
-struct tensor tens_entrymul(
+void tens_entrymul(
         struct tensor *S, struct tensor *T, struct tensor *D);
 
 /* Matrix multiplication over the last two dimensions
  * D = S@T  */
-struct tensor tens_matmul(
+void tens_matmul(
         struct tensor *S, struct tensor *T, struct tensor *D);
 
 /* Sum tensor along axis. Result will have same shape as input, minus
  * the summed axis */
-struct tensor tens_sumaxis(
+void tens_sumaxis(
         struct tensor *S, int8_t axis, struct tensor *D);

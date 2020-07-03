@@ -5,11 +5,11 @@ struct neuralnet {
 };
 
 struct nn_layer {
-    struct tensor (*feedforward) (
+    void (*feedforward) (
             struct nn_layer *, 
             struct tensor *data_in, struct tensor *data_out);
 
-    struct tensor (*backprop) (
+    void (*backprop) (
             struct nn_layer *,
             struct tensor *err_in, struct tensor *err_out);
 
