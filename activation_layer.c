@@ -19,12 +19,12 @@ void feedforward (
 static
 void backprop (
         struct nn_layer *nn_layer,
-        struct tensor *err_in, struct tensor *err_out)
+        struct tensor *nabla_in, struct tensor *nabla_out)
 {
     struct activation_layer *layer = getparent(
             nn_layer, struct activation_layer, nn_layer);
 
-    tens_apply(err_in, layer->activation.df, err_out);
+    tens_apply(nabla_in, layer->activation.df, nabla_out);
 }
 
 struct nn_layer *activation_layer(struct activation activation)
