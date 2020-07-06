@@ -60,11 +60,11 @@ struct tens_pair {
  *
  * MODIFIERS:
  * Apply an operation changing the data of a tensor, leave the view unchanged
- * These functions return null and no memory is allocated, 
- * if a function returns a result, a result tensor has to be provided 
- * as the last argument, matching the shape and order of the expected result.
+ * A result tensor has to be provided as the last argument, matching the shape 
+ * and order of the expected result.
+ * Alternatively, a pointer to a tensor set to TENS_NULL can be provided as the
+ * last argument, and that tensor will be allocated with the right result shape.
  * If the function takes multiple tensors, only the last one is modified
- * (unless otherwise specified).
  * e.g.: tens_add() - Add two matching tensors element-wise
  *
  * All these functions take struct tensor by pointer to save on copying 
@@ -125,6 +125,9 @@ struct tensor tensor(float *arr, struct tens_shape shape);
 
 /* New zero-initialised tensor (calloc'ing, remember to free .arr) */
 struct tensor tens_zeros(struct tens_shape shape);
+
+/* 1d tensor corresping to the range [start, interval, end) */
+struct tensor tens_range(float start, float end, float interval);
 
 
 /* VIEWS */

@@ -35,6 +35,20 @@ MU_TEST(test_tens_zeros)
     free(T.arr);
 }
 
+MU_TEST(test_tens_range)
+{
+    struct tensor T = tens_range(0, 2, 0.5);
+    
+    mu_assert_int_eq(4, T.shape.shape[0]);
+
+    mu_assert_float_eq(0.0, tens_get(&T, (size_t []) {0}));
+    mu_assert_float_eq(0.5, tens_get(&T, (size_t []) {1}));
+    mu_assert_float_eq(1.0, tens_get(&T, (size_t []) {2}));
+    mu_assert_float_eq(1.5, tens_get(&T, (size_t []) {3}));
+
+    free(T.arr);
+}
+
 MU_TEST(test_tens_reshape)
 {
     float arr[] = {
@@ -306,12 +320,15 @@ MU_TEST(test_tens_sumaxis)
     mu_assert_float_eq(12, tens_get(&S, (size_t[]) {0, 1}));
     mu_assert_float_eq(27, tens_get(&S, (size_t[]) {1, 0}));
     mu_assert_float_eq(30, tens_get(&S, (size_t[]) {1, 1}));
+
+    free(S.arr);
 }
 
 MU_TEST_SUITE(test_tensor)
 {
     MU_RUN_TEST(test_tens_get);
     MU_RUN_TEST(test_tens_zeros);
+    MU_RUN_TEST(test_tens_range);
     MU_RUN_TEST(test_tens_reshape);
     MU_RUN_TEST(test_tens_slice);
     MU_RUN_TEST(test_tens_swapaxes);

@@ -25,6 +25,14 @@ struct tensor tens_zeros(struct tens_shape shape)
     return tensor(calloc(1, tens_size(shape) * sizeof(float)), shape);
 }
 
+struct tensor tens_range(float start, float end, float interval)
+{
+    size_t size = (size_t) ((end - start) / interval);
+    float *arr = malloc(size * sizeof(float));
+    for (size_t i = 0; i < size; i++)
+        arr[i] = start + interval * i;
+    return tensor(arr, (struct tens_shape) { 1, {size} });
+}
 
 /* VIEWS */
 
