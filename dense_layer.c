@@ -3,11 +3,11 @@
 
 struct dense_layer {
     struct nn_layer nn_layer;
-    struct tensor W;
+    struct tensor W, B;
     size_t units;
     
     /* Batch cache tensors */
-    struct tensor nabla_W, nabla_W_wide;
+    struct tensor nabla_W, nabla_W_wide, nabla_B;
 };
 
 static
@@ -24,7 +24,9 @@ void feedforward(
         struct tens_shape W_shape = (struct tens_shape) { 2, {
                 data_in->shape.shape[data_in->shape.order - 1],
                 layer->units}};
+        struct tens_shape B_shape = (struct tens_shape) { 1, {layer->units} };
         layer->W = tens_zeros(W_shape);
+        layer->B = tens_zeros(B_shape);
     }
 
     tens_matmul(data_in, &layer->W, data_out);
@@ -40,8 +42,8 @@ void backprop(
 
     assert (nabla_in->shape.order <= 2);
 
-    struct tensor WT = tens_transpose(&layer->W);
-    tens_matmul(nabla_in, &WT, nabla_out);
+    struct tensor W_T = tens_transpose(&layer->W);
+    tens_matmul(nabla_in, &W_T, nabla_out);
 }
 
 static
@@ -60,8 +62,11 @@ void descend(
     struct tensor nabla_in_ = tens_addaxes(nabla_in, 1, 1);
     tens_entrymul(&data_in_, &nabla_in_, &layer->nabla_W_wide);
     tens_sumaxis(&layer->nabla_W_wide, 0, &layer->nabla_W);
-    tens_scalarmul(&layer->nabla_W, eta, &layer->nabla_W);
+    tens_scalarmul(&layer->nabla_W, -eta, &layer->nabla_W);
     tens_add(&layer->W, &layer->nabla_W, &layer->W);
+
+    tens_scalarmul(nabla_in, -eta, &layer->nabla_B);
+    tens_add(&layer->B, &layer->nabla_B, &layer->B);
 }
 
 struct nn_layer *dense_layer(size_t units)
