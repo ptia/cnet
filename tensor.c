@@ -1,5 +1,6 @@
 #include "tensor.h"
 #include "tens_index.h"
+#include "random.h"
 #include <assert.h>
 
 /* CREATORS */
@@ -32,6 +33,15 @@ struct tensor tens_range(float start, float end, float interval)
     for (size_t i = 0; i < size; i++)
         arr[i] = start + interval * i;
     return tensor(arr, (struct tens_shape) { 1, {size} });
+}
+
+struct tensor tens_randn(struct tens_shape shape)
+{
+    size_t size = tens_size(shape);
+    float *arr = malloc(size * sizeof(float));
+    for (size_t i = 0; i < size; i++)
+        arr[i] = randnf();
+    return tensor(arr, shape);
 }
 
 /* VIEWS */

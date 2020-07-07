@@ -126,7 +126,7 @@ struct tensor tensor(float *arr, struct tens_shape shape);
 /* New zero-initialised tensor (calloc'ing, remember to free .arr) */
 struct tensor tens_zeros(struct tens_shape shape);
 
-/* 1d tensor corresping to the range [start, interval, end) */
+/* 1d tensor spanning the range [start, end) */
 struct tensor tens_range(float start, float end, float interval);
 
 
