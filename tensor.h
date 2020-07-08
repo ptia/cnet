@@ -108,7 +108,8 @@ size_t tens_size(struct tens_shape shape)
 static inline
 bool tens_match(struct tens_shape s1, struct tens_shape s2)
 {
-    return s1.order == s2.order && !memcmp(s1.shape, s2.shape, s1.order);
+    return s1.order == s2.order && 
+        !memcmp(s1.shape, s2.shape, s1.order * sizeof(size_t));
 }
 
 /* Test if a tensor is unallocated */
