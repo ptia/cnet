@@ -44,6 +44,7 @@ struct tensor tens_randn(struct tens_shape shape)
     return tensor(arr, shape);
 }
 
+
 /* VIEWS */
 
 struct tensor tens_reshape(struct tensor *T, struct tens_shape shape)
@@ -236,7 +237,7 @@ void tens_matmul(
         struct tensor *S, struct tensor *T, struct tensor *D)
 {
     assert (S->shape.order >= 1);
-    assert (T->shape.order >= 1);
+    assert (T->shape.order >= 2);
     assert (S->shape.shape[S->shape.order - 1] 
             == T->shape.shape[T->shape.order - 2]);
 
@@ -247,7 +248,7 @@ void tens_matmul(
     for (int8_t i = 0; i < order - 2; i++)
         D_shape.shape[i] = ST.S.shape.shape[i];
     D_shape.shape[order - 2] = ST.S.shape.shape[order - 2];
-    D_shape.shape[order - 1] = ST.S.shape.shape[order - 1];
+    D_shape.shape[order - 1] = ST.T.shape.shape[order - 1];
 
     if (tens_null(D))
         *D = tens_zeros(D_shape);

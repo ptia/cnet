@@ -129,6 +129,9 @@ struct tensor tens_zeros(struct tens_shape shape);
 /* 1d tensor spanning the range [start, end) */
 struct tensor tens_range(float start, float end, float interval);
 
+/* Random tensor (normal distribution) */
+struct tensor tens_randn(struct tens_shape shape);
+
 
 /* VIEWS */
 
