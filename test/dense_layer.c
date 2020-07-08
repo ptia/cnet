@@ -5,6 +5,7 @@ MU_TEST(test_dense_feedforward_single)
 {
     struct nn_layer *layer = dense_layer(4);
     struct tensor data_in = tens_range(0, 15, 1);
+    data_in = tens_addaxes(&data_in, 0, 1);
     layer->feedforward(layer, &data_in);
 }
 

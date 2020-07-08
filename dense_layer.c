@@ -16,11 +16,11 @@ void feedforward(struct nn_layer *nn_layer, struct tensor *data_in)
     struct dense_layer *layer = getparent(
             nn_layer, struct dense_layer, nn_layer);
 
-    assert (data_in->shape.order <= 2);
+    assert (data_in->shape.order == 2);
 
     if (tens_null(&layer->W)) {
         struct tens_shape W_shape = (struct tens_shape) { 2, {
-                data_in->shape.shape[data_in->shape.order - 1],
+                data_in->shape.shape[1],
                 layer->units}};
         struct tens_shape B_shape = (struct tens_shape) { 1, {layer->units} };
         layer->W = tens_randn(W_shape);
@@ -36,7 +36,7 @@ void backprop( struct nn_layer *nn_layer, struct tensor *nabla_in)
     struct dense_layer *layer = getparent(
             nn_layer, struct dense_layer, nn_layer);
 
-    assert (nabla_in->shape.order <= 2);
+    assert (nabla_in->shape.order == 2);
 
     struct tensor W_T = tens_transpose(&layer->W);
     tens_matmul(nabla_in, &W_T, &nn_layer->nabla_out);
