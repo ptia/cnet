@@ -6,21 +6,21 @@ struct activation_layer {
 };
 
 static
-void feedforward (struct nn_layer *nn_layer, struct tensor *data_in)
+void feedforward (struct nn_layer *nn_layer, struct tensor *X)
 {
     struct activation_layer *layer = getparent(
             nn_layer, struct activation_layer, nn_layer);
 
-    tens_apply(data_in, layer->activation.f, &nn_layer->data_out);
+    tens_apply(X, layer->activation.f, &nn_layer->Z);
 }
 
 static
-void backprop (struct nn_layer *nn_layer, struct tensor *nabla_in)
+void backprop (struct nn_layer *nn_layer, struct tensor *nabla_Z)
 {
     struct activation_layer *layer = getparent(
             nn_layer, struct activation_layer, nn_layer);
 
-    tens_apply(nabla_in, layer->activation.df, &nn_layer->nabla_out);
+    tens_apply(nabla_Z, layer->activation.df, &nn_layer->nabla_X);
 }
 
 struct nn_layer *activation_layer(struct activation activation)

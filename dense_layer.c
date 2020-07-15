@@ -11,57 +11,57 @@ struct dense_layer {
 };
 
 static
-void feedforward(struct nn_layer *nn_layer, struct tensor *data_in)
+void feedforward(struct nn_layer *nn_layer, struct tensor *X)
 {
     struct dense_layer *layer = getparent(
             nn_layer, struct dense_layer, nn_layer);
 
-    assert (data_in->shape.order == 2);
+    assert (X->shape.order == 2);
 
     if (tens_null(&layer->W)) {
         struct tens_shape W_shape = (struct tens_shape) { 2, {
-                data_in->shape.shape[1],
+                X->shape.shape[1],
                 layer->units}};
         struct tens_shape B_shape = (struct tens_shape) { 1, {layer->units} };
         layer->W = tens_randn(W_shape);
         layer->B = tens_randn(B_shape);
     }
 
-    tens_matmul(data_in, &layer->W, &nn_layer->data_out);
+    tens_matmul(X, &layer->W, &nn_layer->Z);
 }
 
 static
-void backprop( struct nn_layer *nn_layer, struct tensor *nabla_in)
+void backprop( struct nn_layer *nn_layer, struct tensor *nabla_Z)
 {
     struct dense_layer *layer = getparent(
             nn_layer, struct dense_layer, nn_layer);
 
-    assert (nabla_in->shape.order == 2);
+    assert (nabla_Z->shape.order == 2);
 
     struct tensor W_T = tens_transpose(&layer->W);
-    tens_matmul(nabla_in, &W_T, &nn_layer->nabla_out);
+    tens_matmul(nabla_Z, &W_T, &nn_layer->nabla_X);
 }
 
 static
 void descend(
         struct nn_layer *nn_layer,
-        struct tensor *data_in, struct tensor *nabla_in, float eta)
+        struct tensor *X, struct tensor *nabla_Z, float eta)
 {
     struct dense_layer *layer = getparent(
             nn_layer, struct dense_layer, nn_layer);
 
-    assert(data_in->shape.order == 2);
-    assert(nabla_in->shape.order == 2);
+    assert(X->shape.order == 2);
+    assert(nabla_Z->shape.order == 2);
 
-    // (nabla_in[:, np.newaxis, :] * data_in[:, :, np.newaxis]).sum(axis=0)
-    struct tensor data_in_ = tens_addaxes(data_in, 0, 1);
-    struct tensor nabla_in_ = tens_addaxes(nabla_in, 1, 1);
-    tens_entrymul(&data_in_, &nabla_in_, &layer->nabla_W_wide);
+    // (nabla_Z[:, np.newaxis, :] * X[:, :, np.newaxis]).sum(axis=0)
+    struct tensor X_ = tens_addaxes(X, 0, 1);
+    struct tensor nabla_Z_ = tens_addaxes(nabla_Z, 1, 1);
+    tens_entrymul(&X_, &nabla_Z_, &layer->nabla_W_wide);
     tens_sumaxis(&layer->nabla_W_wide, 0, &layer->nabla_W);
     tens_scalarmul(&layer->nabla_W, -eta, &layer->nabla_W);
     tens_add(&layer->W, &layer->nabla_W, &layer->W);
 
-    tens_scalarmul(nabla_in, -eta, &layer->nabla_B);
+    tens_scalarmul(nabla_Z, -eta, &layer->nabla_B);
     tens_add(&layer->B, &layer->nabla_B, &layer->B);
 }
 

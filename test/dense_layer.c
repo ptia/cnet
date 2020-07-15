@@ -8,7 +8,7 @@ MU_TEST(test_dense_feedforward_single)
     data_in = tens_addaxes(&data_in, 0, 1);
     layer->feedforward(layer, &data_in);
     mu_check(tens_match((struct tens_shape) {2, {1, 4}}, 
-                layer->data_out.shape));
+                layer->Z.shape));
 }
 
 MU_TEST(test_dense_feedforward_batch)
@@ -18,7 +18,7 @@ MU_TEST(test_dense_feedforward_batch)
     data_in = tens_reshape(&data_in, (struct tens_shape) {2, {3, 15}});
     layer->feedforward(layer, &data_in);
     mu_check(tens_match((struct tens_shape) {2, {3, 4}}, 
-                layer->data_out.shape));
+                layer->Z.shape));
 }
 
 MU_TEST_SUITE(test_dense_layer)
