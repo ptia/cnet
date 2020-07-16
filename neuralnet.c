@@ -1,7 +1,9 @@
 #include "neuralnet.h"
 
-void nn_addlayer(struct neuralnet *net, struct nn_layer *layer)
+void nn_addlayer(struct neuralnet *net, struct nn_layer *layer, struct activation af)
 {
+    layer->af = af;
+    layer->A = TENS_NULL;
     layer->prev = net->last;
     layer->next = NULL;
     if (net->last)
@@ -17,7 +19,9 @@ struct tensor nn_eval(struct neuralnet *net, struct tensor *X)
         if (l == net->first)
             l->feedforward(l, X);
         else
-            l->feedforward(l, &l->prev->Z);
+            l->feedforward(l, &l->prev->A);
+        tens_map(&l->Z, l->af.f, &l->A);
+        
     }
     return net->last->Z;
 }

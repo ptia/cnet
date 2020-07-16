@@ -171,7 +171,7 @@ struct tens_pair tens_broadcast(struct tensor *S, struct tensor *T);
 /* MODIFIERS */
 
 /* Apply function to all scalar elements */
-void tens_apply(
+void tens_map(
         struct tensor *T, float (*f) (float), struct tensor *D);
 
 /* Multiply all elements of a tensor by a scalar 
